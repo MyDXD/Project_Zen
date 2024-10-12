@@ -25,16 +25,15 @@ if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
 </head>
 
 <body class="bg-gray-100">
-    <!-- Sidebar -->
+
     <div class="flex">
         <?php include 'sidebar.php'; ?>
 
         <div class="flex-1 p-6 h-screen">
-            <!-- Navbar -->
-            <!-- Product Inventory Table -->
+
             <div class="flex justify-between items-center mb-6">
                 <h1 class="text-2xl font-semibold">คลังสินค้า</h1>
-                <div class="flex items-center space-x-4"> <!-- เพิ่ม space-x-4 เพื่อเพิ่มช่องว่าง -->
+                <div class="flex items-center space-x-4">
 
                     <form action="" method="GET">
                         <a href="create_product.php"
@@ -46,12 +45,7 @@ if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
                     </form>
                 </div>
             </div>
-            <!-- <div class="flex justify-end items-end mb-6 ">
-                <a href="create_product.php"
-                    class=" bg-green-500 text-right text-white px-4 py-2 rounded-lg hover:bg-green-600">
-                    เพิ่มสินค้า
-                </a>
-            </div> -->
+
 
             <table class="min-w-full table-auto bg-white p-6 rounded-lg shadow-md  text-center">
                 <thead class="text-center">

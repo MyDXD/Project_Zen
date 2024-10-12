@@ -12,7 +12,7 @@
     <?php include 'dbconnect.php'; // เชื่อมต่อฐานข้อมูล ?>
 
     <div class="container mx-auto bg-white">
-        <div class="mx-auto max-w-2xl px-4 py-16 sm:px-6 sm:py-16 lg:max-w-7xl lg:px-8">
+        <div class="mx-auto bg-gray-100 rounded-lg shadow-md mt-2 max-w-2xl px-4 py-16 sm:px-6 sm:py-16 lg:max-w-7xl lg:px-8">
             <div class="md:flex md:items-center md:justify-between">
                 <h2 class="text-2xl font-bold tracking-tight text-gray-900">สินค้าแนะนำ</h2>
 

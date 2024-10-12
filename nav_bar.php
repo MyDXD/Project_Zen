@@ -113,7 +113,7 @@
         }).then((result) => {
             if (result.isConfirmed) {
                 // ถ้าผู้ใช้กดยืนยัน ให้นำไปยังหน้า logout.php
-                window.location.href = "/logout.php";
+                window.location.href = "./logout.php";
             }
         })
     }
