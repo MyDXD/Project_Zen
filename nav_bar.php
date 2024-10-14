@@ -4,8 +4,12 @@
 
 <body>
     <?php
-    session_start();
+    if (session_status() == PHP_SESSION_NONE) {
+        session_start(); // ใช้การตรวจสอบก่อนเพื่อหลีกเลี่ยงการเรียกใช้หลายครั้ง
+    }
+
     include("dbconnect.php");
+
     if (isset($_SESSION['email'])) {
         $email = $_SESSION['email'];
         $query = mysqli_query($conn, "SELECT * FROM `userdata` WHERE `email`='$email'");
@@ -19,6 +23,7 @@
                 $lastname = $row['last_name'];
                 $logout = 'ออกจากระบบ';
                 $cart = "ตรวจสอบตระกร้าสินค้า";
+                $order = "ตรวจสอบออเดอร์";
                 $login = "";
                 $signup = "";
             }
@@ -31,8 +36,11 @@
         $login = "เข้าสู่ระบบ";
         $signup = "สมัครสมาชิก";
         $cart = "";
+        $order = "";
+
     }
     ?>
+
     <div class="bg-white">
         <header class="relative">
             <nav aria-label="Top">
@@ -44,7 +52,7 @@
                             <button class="text-red-300 hover:text-white" onclick="confirmLogout()">
                                 <?php echo $logout; ?>
                             </button>
-                            
+
                             <a href="login.php"
                                 class="text-sm font-medium text-white hover:text-gray-100"><?php echo $login; ?></a>
                             <a href="sign_upform.php"
@@ -68,10 +76,10 @@
 
                                     <a href="contactus.php"
                                         class="text-sm font-medium text-gray-700 hover:text-gray-800">ช่องทางติดต่อเพิ่มเติม</a>
-                                    <a href="index.php"
-                                        class="text-sm font-medium text-gray-700 hover:text-gray-800">สินค้าทั้งหมด</a>
-                                    <a href=""
+                                    <a href="cart.php"
                                         class="text-sm font-medium text-gray-700 hover:text-gray-800"><?php echo $cart; ?></a>
+                                    <a href="order.php"
+                                        class="text-sm font-medium text-gray-700 hover:text-gray-800"><?php echo $order; ?></a>
                                 </div>
 
                                 <div class=" items-center justifly-end space-x-4">
