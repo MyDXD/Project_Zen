@@ -1,7 +1,7 @@
 <?php
 $servername = "localhost";
 $username = "root";  // เปลี่ยนจาก $dbhost เป็น $username
-$password = "123456";
+$password = "";
 $dbname = "sanahstore";
 
 

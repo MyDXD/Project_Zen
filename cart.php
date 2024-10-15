@@ -5,13 +5,30 @@
 session_start(); // เรียกใช้ session_start() ที่จุดเริ่มต้น
 include("dbconnect.php");
 
-
 // คำนวณข้อมูลตะกร้าสินค้าจากฐานข้อมูล
 $user_id = $_SESSION['user_id'];
 $subtotal = 0;
 
-if ($user_id) {
-    $cart_query = "SELECT p.product_price, c.quantity FROM cart c JOIN products p ON c.product_id = p.product_id WHERE c.user_id = '$user_id'";
+// ตรวจสอบว่ามีการตั้งค่า user_id หรือไม่
+if (isset($_SESSION['user_id'])) {
+    $user_id = $_SESSION['user_id'];
+
+    // ดึงที่อยู่การจัดส่งจากตาราง userdata
+    $address_query = "SELECT LEFT(address, 256) AS delivery_address FROM userdata WHERE user_id = '$user_id'";
+    $address_result = mysqli_query($conn, $address_query);
+
+    if ($address_result && mysqli_num_rows($address_result) > 0) {
+        $address_row = mysqli_fetch_assoc($address_result);
+        $delivery_address = $address_row['delivery_address']; // ที่อยู่จากฐานข้อมูล
+    } else {
+        // หากไม่มีที่อยู่การจัดส่งให้ใช้ค่าที่กำหนดไว้ล่วงหน้า
+        $delivery_address = 'ไม่พบที่อยู่การจัดส่ง';
+    }
+
+    // Query ตะกร้าสินค้าของผู้ใช้
+    $cart_query = "SELECT p.product_price, c.quantity FROM cart c 
+                   JOIN products p ON c.product_id = p.product_id 
+                   WHERE c.user_id = '$user_id'";
     $cart_result = mysqli_query($conn, $cart_query);
 
     while ($row = mysqli_fetch_assoc($cart_result)) {
@@ -20,13 +37,6 @@ if ($user_id) {
 
     // คำนวณยอดรวมทั้งหมด
     $total = $subtotal;
-}
-
-
-
-// ตรวจสอบว่ามีการตั้งค่า user_id หรือไม่
-if (isset($_SESSION['user_id'])) {
-    $user_id = $_SESSION['user_id'];
 
     // ดึงข้อมูลสินค้าที่ผู้ใช้งานเพิ่มในตะกร้า
     $sql = "
@@ -44,7 +54,7 @@ if (isset($_SESSION['user_id'])) {
             while ($row = $result->fetch_assoc()) {
                 $cart_items[] = $row;
             }
-        } 
+        }
     } else {
         echo "เกิดข้อผิดพลาดในการดึงข้อมูล: " . $conn->error;
     }
@@ -58,8 +68,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     // เพิ่มข้อมูลลงในตาราง orders
     $order_date = date('Y-m-d H:i:s');
     $order_status = 'pending'; // กำหนดสถานะเริ่มต้น
-    $delivery_address = 'Some address'; // สมมติให้มีที่อยู่จัดส่ง
+    $delivery_address = mysqli_real_escape_string($conn, $delivery_address); 
 
+    // เพิ่มคำสั่งซื้อในตาราง orders พร้อมที่อยู่การจัดส่ง
     $order_query = "INSERT INTO orders (user_id, total_price, order_status, order_date, delivery_address) 
                     VALUES ('$user_id', '$total', '$order_status', '$order_date', '$delivery_address')";
 
@@ -76,12 +87,33 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $product_id = $item['product_id'];
         $quantity = $item['quantity'];
         $price = $item['product_price'];
+        
+        // ดึงค่าจำนวนสินค้าที่เลือกจากฟอร์ม
+        if (isset($_POST['quantity_' . $product_id])) {
+            $quantity = $_POST['quantity_' . $product_id];
+        } else {
+            $quantity = 1; // ถ้าไม่มีการส่งค่าใช้ค่าเริ่มต้นเป็น 1
+        }
 
+        // ตรวจสอบจำนวนสินค้าที่มีในคลังก่อน
+        $product_query = "SELECT stock FROM products WHERE product_id = '$product_id'";
+        $product_result = mysqli_query($conn, $product_query);
+
+        // เพิ่มสินค้าในตาราง order_items
         $order_items_query = "INSERT INTO order_items (order_id, product_id, quantity, price) 
                               VALUES ('$order_id', '$product_id', '$quantity', '$price')";
 
         if (!mysqli_query($conn, $order_items_query)) {
             echo "เกิดข้อผิดพลาดในการเพิ่มสินค้าใน order_items: " . mysqli_error($conn);
+            exit();
+        } else {
+            // ลดจำนวนสินค้าจากตาราง products
+            $update_product_query = "UPDATE products SET stock = stock - $quantity WHERE product_id = '$product_id'";
+
+            if (!mysqli_query($conn, $update_product_query)) {
+                echo "เกิดข้อผิดพลาดในการลดจำนวนสินค้า: " . mysqli_error($conn);
+                exit();
+            }
         }
     }
 
@@ -89,6 +121,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $clear_cart_query = "DELETE FROM cart WHERE user_id = '$user_id'";
     if (!mysqli_query($conn, $clear_cart_query)) {
         echo "เกิดข้อผิดพลาดในการเคลียร์ตะกร้า: " . mysqli_error($conn);
+        exit();
     }
 
     // แสดงข้อความสำเร็จและเปลี่ยนเส้นทางไปยังหน้าสรุปคำสั่งซื้อ
@@ -110,9 +143,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 </script>';
 }
 
+
 include "nav_bar.php"; // เรียกไฟล์ nav_bar.php
 ?>
-
 
 <div class="bg-white">
     <div class="mx-auto max-w-2xl px-4 pb-24 pt-16 sm:px-6 lg:max-w-7xl lg:px-8">
@@ -142,33 +175,27 @@ include "nav_bar.php"; // เรียกไฟล์ nav_bar.php
                                         $<?php echo number_format($item['product_price'], 2); ?></p>
                                 </div>
 
-                                <div class="mt-4 sm:mt-0 sm:pr-9">
-                                    <label for="quantity-<?php echo $item['product_id']; ?>" class="sr-only">Quantity,
-                                        <?php echo $item['name']; ?></label>
-                                    <select id="quantity-<?php echo $item['product_id']; ?>"
-                                        name="quantity-<?php echo $item['product_id']; ?>"
-                                        class="max-w-full rounded-md border border-gray-300 py-1.5 text-left text-base font-medium leading-5 text-gray-700 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 sm:text-sm">
-                                        <?php for ($i = 1; $i <= 10; $i++): ?>
-                                        <option value="<?php echo $i; ?>"
-                                            <?php if ($i == $item['quantity']) echo 'selected'; ?>><?php echo $i; ?>
-                                        </option>
-                                        <?php endfor; ?>
-                                    </select>
+                                <?php
+                                    // ดึงจำนวนสินค้าที่มีในคลังจากฐานข้อมูล
+                                    $product_id = $item['product_id'];
+                                    $product_query = "SELECT stock FROM products WHERE product_id = '$product_id'";
+                                    $product_result = mysqli_query($conn, $product_query);
 
-                                    <div class="absolute right-0 top-0">
-                                        <button type="button"
-                                            class="-m-2 inline-flex p-2 text-gray-400 hover:text-gray-500">
-                                            <span class="sr-only">Remove</span>
-                                            <svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"
-                                                aria-hidden="true">
-                                                <path
-                                                    d="M6.28 5.22a.75.75 0 0 0-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 1 0 1.06 1.06L10 11.06l3.72 3.72a.75.75 0 1 0 1.06-1.06L11.06 10l3.72-3.72a.75.75 0 0 0-1.06-1.06L10 8.94 6.28 5.22Z" />
-                                            </svg>
-                                        </button>
-                                    </div>
-                                </div>
+                                    if ($product_result && $product_row = mysqli_fetch_assoc($product_result)) {
+                                        $stock = $product_row['stock'];
+                                    } else {
+                                        $stock = 0; // กำหนดค่าเป็น 0 ถ้าหาข้อมูลสินค้าไม่ได้
+                                    }
+                                    ?>
+
+                                <!-- Input สำหรับใส่จำนวนสินค้า โดยมีการจำกัด max ตามจำนวนในคลัง -->
+                                <input class="w-20 text-center border-1" type="number"
+                                    name="quantity_<?php echo $product_id; ?>" min="1" max="<?php echo $stock; ?>"
+                                    value="1" />
+                                <p class="mt-1 text-sm text-gray-700">สินค้าคงเหลือ: <?php echo $stock; ?> ชิ้น</p>
                             </div>
                         </div>
+
                     </li>
                     <?php endforeach; ?>
                 </ul>
@@ -187,11 +214,17 @@ include "nav_bar.php"; // เรียกไฟล์ nav_bar.php
                         <dt class="text-base font-medium text-gray-900">Order total</dt>
                         <dd class="text-base font-medium text-gray-900"><?php echo number_format($total, 2); ?> บาท</dd>
                     </div>
+                    <div class=" items-center border-t border-gray-200 pt-4">
+                        <dt class="text-base font-medium text-gray-900">ที่อยู่การจัดส่ง</dt>
+                        <dd class="text-base font-medium text-gray-900">
+                            <?php echo isset($delivery_address) ? $delivery_address : 'ไม่พบที่อยู่'; ?>
+                        </dd>
+                    </div>
                 </dl>
                 <?php
-                    // ตรวจสอบว่ามีสินค้ามากกว่า 0 รายการในตะกร้าหรือไม่
-                    if (count($cart_items) > 0) {
-                        echo '
+                // ตรวจสอบว่ามีสินค้ามากกว่า 0 รายการในตะกร้าหรือไม่
+                if (count($cart_items) > 0) {
+                    echo '
                         <form method="POST">
                             <div class="mt-6">
                                 <button type="submit"
@@ -199,16 +232,16 @@ include "nav_bar.php"; // เรียกไฟล์ nav_bar.php
                             </div>
                         </form>
                         ';
-                    } else {
-                        echo '
+                } else {
+                    echo '
                         <div class="mt-6">
                             <button type="button" disabled
                                 class="w-full rounded-md border border-transparent bg-gray-400 px-4 py-3 text-base font-medium text-white shadow-sm cursor-not-allowed">Checkout</button>
                             <p class="text-red-500 text-sm mt-2">ไม่มีสินค้าในตะกร้า</p>
                         </div>
                         ';
-                    }
-                    ?>
+                }
+                ?>
         </form>
         </section>
     </div>
