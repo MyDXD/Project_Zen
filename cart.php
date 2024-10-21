@@ -1,4 +1,5 @@
 <script src="https://cdn.tailwindcss.com"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
 
 
 <?php
@@ -38,6 +39,10 @@ if (isset($_SESSION['user_id'])) {
     // คำนวณยอดรวมทั้งหมด
     $total = $subtotal;
 
+    // ส่งยอดรวมใหม่กลับไปที่หน้าเว็บ
+    $response = array('total' => number_format($subtotal, 2));
+    echo json_encode($response);
+
     // ดึงข้อมูลสินค้าที่ผู้ใช้งานเพิ่มในตะกร้า
     $sql = "
         SELECT cart.product_id, cart.quantity, products.product_name, products.product_price, products.product_img 
@@ -49,11 +54,15 @@ if (isset($_SESSION['user_id'])) {
     $result = $conn->query($sql);
     $cart_items = [];
 
+
     if ($result) {
         if ($result->num_rows > 0) {
             while ($row = $result->fetch_assoc()) {
                 $cart_items[] = $row;
+
             }
+            $cart_itemsaa = json_encode($cart_items);
+            echo $cart_itemsaa;
         }
     } else {
         echo "เกิดข้อผิดพลาดในการดึงข้อมูล: " . $conn->error;
@@ -68,7 +77,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     // เพิ่มข้อมูลลงในตาราง orders
     $order_date = date('Y-m-d H:i:s');
     $order_status = 'pending'; // กำหนดสถานะเริ่มต้น
-    $delivery_address = mysqli_real_escape_string($conn, $delivery_address); 
+    $delivery_address = mysqli_real_escape_string($conn, $delivery_address);
 
     // เพิ่มคำสั่งซื้อในตาราง orders พร้อมที่อยู่การจัดส่ง
     $order_query = "INSERT INTO orders (user_id, total_price, order_status, order_date, delivery_address) 
@@ -87,7 +96,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $product_id = $item['product_id'];
         $quantity = $item['quantity'];
         $price = $item['product_price'];
-        
+
         // ดึงค่าจำนวนสินค้าที่เลือกจากฟอร์ม
         if (isset($_POST['quantity_' . $product_id])) {
             $quantity = $_POST['quantity_' . $product_id];
@@ -156,28 +165,29 @@ include "nav_bar.php"; // เรียกไฟล์ nav_bar.php
 
                 <ul role="list" class="divide-y divide-gray-200 border-b border-t border-gray-200">
                     <?php foreach ($cart_items as $item): ?>
-                    <li class="flex py-6 sm:py-10">
-                        <div class="flex-shrink-0">
-                            <img src="<?php echo $item['product_img']; ?>" alt="<?php echo $item['product_name']; ?>"
-                                class="h-24 w-24 rounded-md object-cover object-center sm:h-48 sm:w-48">
-                        </div>
+                        <li <?php echo $item['product_id'] ?> class="flex py-6 sm:py-10">
+                            <div class="flex-shrink-0">
+                                <img src="<?php echo $item['product_img']; ?>" alt="<?php echo $item['product_name']; ?>"
+                                    class="h-24 w-24 rounded-md object-cover object-center sm:h-48 sm:w-48">
+                            </div>
 
-                        <div class="ml-4 flex flex-1 flex-col justify-between sm:ml-6">
-                            <div class="relative pr-9 sm:grid sm:grid-cols-2 sm:gap-x-6 sm:pr-0">
-                                <div>
-                                    <div class="flex justify-between">
-                                        <h3 class="text-sm">
-                                            <a href="#"
-                                                class="font-medium text-gray-700 hover:text-gray-800"><?php echo $item['product_name']; ?></a>
-                                        </h3>
+                            <div class="ml-4 flex flex-1 flex-col justify-between sm:ml-6">
+                                <div class="relative pr-9 sm:grid sm:grid-cols-2 sm:gap-x-6 sm:pr-0">
+                                    <div>
+                                        <div class="flex justify-between">
+                                            <h3 class="text-sm">
+                                                <a href="#"
+                                                    class="font-medium text-gray-700 hover:text-gray-800"><?php echo $item['product_name']; ?></a>
+                                            </h3>
+                                        </div>
+                                        <p class="mt-1 text-sm font-medium text-gray-900">
+                                            $<?php echo number_format($item['product_price'], 2); ?></p>
                                     </div>
-                                    <p class="mt-1 text-sm font-medium text-gray-900">
-                                        $<?php echo number_format($item['product_price'], 2); ?></p>
-                                </div>
 
-                                <?php
+                                    <?php
                                     // ดึงจำนวนสินค้าที่มีในคลังจากฐานข้อมูล
                                     $product_id = $item['product_id'];
+                                    $product_price = $item['product_price'];
                                     $product_query = "SELECT stock FROM products WHERE product_id = '$product_id'";
                                     $product_result = mysqli_query($conn, $product_query);
 
@@ -188,16 +198,18 @@ include "nav_bar.php"; // เรียกไฟล์ nav_bar.php
                                     }
                                     ?>
 
-                                <!-- Input สำหรับใส่จำนวนสินค้า โดยมีการจำกัด max ตามจำนวนในคลัง -->
-                                <input class="w-20 text-center border-1" type="number"
-                                    name="quantity_<?php echo $product_id; ?>" min="1" max="<?php echo $stock; ?>"
-                                    value="1" />
-                                <p class="mt-1 text-sm text-gray-700">สินค้าคงเหลือ: <?php echo $stock; ?> ชิ้น</p>
+                                    <!-- Input สำหรับใส่จำนวนสินค้า โดยมีการจำกัด max ตามจำนวนในคลัง -->
+                                    <input class="w-20 text-center border-1 quantity-input" type="number"
+                                        name="quantity_<?php echo $product_id; ?>" min="1" max="<?php echo $stock; ?>"
+                                        value="<?php echo $quantity; ?>" data-product-id="<?php echo $product_id; ?>"
+                                        data-product-price="<?php echo $product_price; ?>" />
+                                    <p class="mt-1 text-sm text-gray-700">สินค้าคงเหลือ: <?php echo $stock; ?> ชิ้น</p>
+                                </div>
                             </div>
-                        </div>
 
-                    </li>
+                        </li>
                     <?php endforeach; ?>
+
                 </ul>
             </section>
             <section aria-labelledby="summary-heading"
@@ -205,14 +217,12 @@ include "nav_bar.php"; // เรียกไฟล์ nav_bar.php
                 <h2 id="summary-heading" class="text-lg font-medium text-gray-900">Order summary</h2>
 
                 <dl class="mt-6 space-y-4">
-                    <div class="flex items-center justify-between">
-                        <dt class="text-sm text-gray-600">Subtotal</dt>
-                        <dd class="text-sm font-medium text-gray-900"><?php echo number_format($subtotal, 2); ?> บาท
-                        </dd>
-                    </div>
+                    <!-- แสดงผลรวมของการสั่งซื้อ -->
                     <div class="flex items-center justify-between border-t border-gray-200 pt-4">
                         <dt class="text-base font-medium text-gray-900">Order total</dt>
-                        <dd class="text-base font-medium text-gray-900"><?php echo number_format($total, 2); ?> บาท</dd>
+                        <dd class="text-base font-medium text-gray-900" id="order-total">
+                            <?php echo number_format($total, 2); ?> บาท
+                        </dd>
                     </div>
                     <div class=" items-center border-t border-gray-200 pt-4">
                         <dt class="text-base font-medium text-gray-900">ที่อยู่การจัดส่ง</dt>
@@ -245,4 +255,82 @@ include "nav_bar.php"; // เรียกไฟล์ nav_bar.php
         </form>
         </section>
     </div>
+    <p hidden id="cart_itemsaa"><?php echo $cart_itemsaa; ?></p>
 </div>
+
+<script>
+$(document).ready(function () {
+    var totalOrderSum = 0;  // ตัวแปรเก็บยอดรวมของสินค้าทั้งหมด
+
+    // คำนวณยอดรวมเริ่มต้นของสินค้าทั้งหมด
+    $('.quantity-input').each(function () {
+        var productPrice = $(this).data('product-price');
+        var quantity = $(this).val();
+        totalOrderSum += productPrice * quantity;
+    });
+
+    // แสดงยอดรวมเริ่มต้น
+    $('#order-total').text(totalOrderSum.toFixed(2) + ' บาท');
+
+    $('.quantity-input').on('change', function () {
+        var productId = $(this).data('product-id');
+        var productPrice = $(this).data('product-price');
+        var newQuantity = $(this).val();
+
+        // คำนวณยอดรวมของสินค้านั้น ๆ
+        var itemTotal = productPrice * newQuantity;
+
+        console.log("productId", productId);
+        console.log("productPrice", productPrice);
+        console.log("newQuantity", newQuantity);
+        console.log("itemTotal", itemTotal);
+
+        // คำนวณยอดรวมใหม่ทั้งหมด
+        totalOrderSum = 0;
+        $('.quantity-input').each(function () {
+            var price = $(this).data('product-price');
+            var qty = $(this).val();
+            totalOrderSum += price * qty;
+        });
+
+        // อัปเดตยอดรวมทั้งหมดในหน้าเว็บ
+        $('#order-total').text(totalOrderSum.toFixed(2) + ' บาท');
+
+        // ส่งข้อมูลไปที่ PHP เพื่ออัปเดตจำนวนสินค้าในตะกร้า
+        $.ajax({
+            url: '',  // PHP script ที่จะอัปเดตตะกร้า
+            method: 'POST',
+            data: {
+                product_id: productId,
+                quantity: newQuantity
+            },
+            success: function (response) {
+                // ในกรณีที่ต้องการรับค่าตอบกลับจาก server
+                console.log("Response: ", response);
+            }
+        });
+    });
+});
+</script>
+
+
+<!-- <script>
+    const roomPrice = {{ $room_detail-> price }};
+
+    async function updatePrice() {
+        const checkInDate = document.getElementById('check_in').value;
+        const checkOutDate = document.getElementById('check_out').value;
+        const numDays = await Math.floor((new Date(checkOutDate) - new Date(checkInDate)) / (1000 * 60 * 60 * 24));
+        const price = numDays * roomPrice;
+        // Update button text with formatted price
+        document.getElementById('price').textContent = 'ราคารวม :' + price.toFixed(2) + ' บาท/คืน';
+        document.getElementById('total').value = price
+    }
+
+    // Update price on initial load
+    updatePrice();
+
+    // Update price on change of check-in/out date
+    document.getElementById('check_in').addEventListener('change', updatePrice);
+    document.getElementById('check_out').addEventListener('change', updatePrice);
+</script> -->
