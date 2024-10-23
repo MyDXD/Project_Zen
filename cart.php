@@ -3,16 +3,15 @@
 
 
 <?php
-session_start(); // เรียกใช้ session_start() ที่จุดเริ่มต้น
+session_start();
 include("dbconnect.php");
 
-// คำนวณข้อมูลตะกร้าสินค้าจากฐานข้อมูล
-$user_id = $_SESSION['user_id'];
-$subtotal = 0;
 
 // ตรวจสอบว่ามีการตั้งค่า user_id หรือไม่
 if (isset($_SESSION['user_id'])) {
     $user_id = $_SESSION['user_id'];
+    $subtotal = 0;
+
 
     // ดึงที่อยู่การจัดส่งจากตาราง userdata
     $address_query = "SELECT LEFT(address, 256) AS delivery_address FROM userdata WHERE user_id = '$user_id'";
@@ -33,15 +32,20 @@ if (isset($_SESSION['user_id'])) {
     $cart_result = mysqli_query($conn, $cart_query);
 
     while ($row = mysqli_fetch_assoc($cart_result)) {
-        $subtotal += $row['product_price'] * $row['quantity'];
+        // ถ้า quantity เป็น 0 (ในกรณีไม่มีการตั้งค่า) จะใช้ค่า 1 แทน
+        $quantity = $row['quantity'] ? $row['quantity'] : 1;
+
+        // คำนวณผลรวมย่อยต่อชิ้น
+        $subtotal += $row['product_price'] * $quantity;
     }
 
     // คำนวณยอดรวมทั้งหมด
     $total = $subtotal;
 
-    // ส่งยอดรวมใหม่กลับไปที่หน้าเว็บ
-    $response = array('total' => number_format($subtotal, 2));
-    echo json_encode($response);
+
+    // // ส่งยอดรวมใหม่กลับไปที่หน้าเว็บ
+    // $response = array('total' => number_format($total, 2));
+    // echo json_encode($response);
 
     // ดึงข้อมูลสินค้าที่ผู้ใช้งานเพิ่มในตะกร้า
     $sql = "
@@ -52,6 +56,8 @@ if (isset($_SESSION['user_id'])) {
     ";
 
     $result = $conn->query($sql);
+
+
     $cart_items = [];
 
 
@@ -59,10 +65,8 @@ if (isset($_SESSION['user_id'])) {
         if ($result->num_rows > 0) {
             while ($row = $result->fetch_assoc()) {
                 $cart_items[] = $row;
-
             }
-            $cart_itemsaa = json_encode($cart_items);
-            echo $cart_itemsaa;
+
         }
     } else {
         echo "เกิดข้อผิดพลาดในการดึงข้อมูล: " . $conn->error;
@@ -78,10 +82,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $order_date = date('Y-m-d H:i:s');
     $order_status = 'pending'; // กำหนดสถานะเริ่มต้น
     $delivery_address = mysqli_real_escape_string($conn, $delivery_address);
-
+    $total_price = $_POST['total_price'];
+    
     // เพิ่มคำสั่งซื้อในตาราง orders พร้อมที่อยู่การจัดส่ง
     $order_query = "INSERT INTO orders (user_id, total_price, order_status, order_date, delivery_address) 
-                    VALUES ('$user_id', '$total', '$order_status', '$order_date', '$delivery_address')";
+                    VALUES ('$user_id', '$total_price', '$order_status', '$order_date', '$delivery_address')";
 
     if (mysqli_query($conn, $order_query)) {
         // ดึง order_id ที่เพิ่งถูกสร้าง
@@ -181,7 +186,7 @@ include "nav_bar.php"; // เรียกไฟล์ nav_bar.php
                                             </h3>
                                         </div>
                                         <p class="mt-1 text-sm font-medium text-gray-900">
-                                            $<?php echo number_format($item['product_price'], 2); ?></p>
+                                            ราคาต่อชิ้น <?php echo number_format($item['product_price'], 2); ?> บาท</p>
                                     </div>
 
                                     <?php
@@ -201,8 +206,9 @@ include "nav_bar.php"; // เรียกไฟล์ nav_bar.php
                                     <!-- Input สำหรับใส่จำนวนสินค้า โดยมีการจำกัด max ตามจำนวนในคลัง -->
                                     <input class="w-20 text-center border-1 quantity-input" type="number"
                                         name="quantity_<?php echo $product_id; ?>" min="1" max="<?php echo $stock; ?>"
-                                        value="<?php echo $quantity; ?>" data-product-id="<?php echo $product_id; ?>"
-                                        data-product-price="<?php echo $product_price; ?>" />
+                                        data-price="<?php echo $product_price; ?>"
+                                        value="<?php echo $item['quantity'] ? $item['quantity'] : 1; ?>" />
+
                                     <p class="mt-1 text-sm text-gray-700">สินค้าคงเหลือ: <?php echo $stock; ?> ชิ้น</p>
                                 </div>
                             </div>
@@ -216,21 +222,25 @@ include "nav_bar.php"; // เรียกไฟล์ nav_bar.php
                 class="mt-16 rounded-lg bg-gray-50 px-4 py-6 sm:p-6 lg:col-span-5 lg:mt-0 lg:p-8">
                 <h2 id="summary-heading" class="text-lg font-medium text-gray-900">Order summary</h2>
 
-                <dl class="mt-6 space-y-4">
+                <div class="mt-6 space-y-4">
                     <!-- แสดงผลรวมของการสั่งซื้อ -->
-                    <div class="flex items-center justify-between border-t border-gray-200 pt-4">
-                        <dt class="text-base font-medium text-gray-900">Order total</dt>
-                        <dd class="text-base font-medium text-gray-900" id="order-total">
-                            <?php echo number_format($total, 2); ?> บาท
-                        </dd>
+                    <div class="mt-6 space-y-4">
+                        <div class="flex items-center justify-between border-t border-gray-200 pt-4">
+                            <div class="text-base font-medium text-gray-900">Order total</div>
+                            <div id="order-total" class="text-base font-medium text-gray-900">0 บาท</div>
+                        </div>
                     </div>
+                    <!-- Hidden input field สำหรับเก็บยอดรวม -->
+                    <input type="" name="total_price" id="hidden-total" value="0" />
+                    
                     <div class=" items-center border-t border-gray-200 pt-4">
                         <dt class="text-base font-medium text-gray-900">ที่อยู่การจัดส่ง</dt>
                         <dd class="text-base font-medium text-gray-900">
                             <?php echo isset($delivery_address) ? $delivery_address : 'ไม่พบที่อยู่'; ?>
                         </dd>
                     </div>
-                </dl>
+                </div>
+
                 <?php
                 // ตรวจสอบว่ามีสินค้ามากกว่า 0 รายการในตะกร้าหรือไม่
                 if (count($cart_items) > 0) {
@@ -255,10 +265,38 @@ include "nav_bar.php"; // เรียกไฟล์ nav_bar.php
         </form>
         </section>
     </div>
-    <p hidden id="cart_itemsaa"><?php echo $cart_itemsaa; ?></p>
 </div>
 
+<!-- JavaScript สำหรับคำนวณราคารวม -->
 <script>
+    // ฟังก์ชันสำหรับคำนวณยอดรวมใหม่
+    function calculateTotal() {
+        let total = 0;
+        document.querySelectorAll('.quantity-input').forEach(function (input) {
+            let quantity = parseInt(input.value);
+            let price = parseFloat(input.getAttribute('data-price'));
+            total += quantity * price;
+        });
+        // แสดงยอดรวมใหม่
+        document.getElementById('order-total').textContent = total.toLocaleString('th-TH', {style: 'currency', currency: 'THB'}) + ' บาท';
+        // อัปเดตค่าของ hidden input field
+        document.getElementById('hidden-total').value = total;
+    }
+
+    // ตรวจสอบเมื่อมีการเปลี่ยนแปลงจำนวนสินค้า
+    document.querySelectorAll('.quantity-input').forEach(function (input) {
+        input.addEventListener('input', calculateTotal);
+    });
+
+    // คำนวณยอดรวมเมื่อเริ่มโหลดหน้า
+    window.addEventListener('load', calculateTotal);
+</script>
+
+
+
+
+
+<!-- <script>
 $(document).ready(function () {
     var totalOrderSum = 0;  // ตัวแปรเก็บยอดรวมของสินค้าทั้งหมด
 
@@ -311,26 +349,4 @@ $(document).ready(function () {
         });
     });
 });
-</script>
-
-
-<!-- <script>
-    const roomPrice = {{ $room_detail-> price }};
-
-    async function updatePrice() {
-        const checkInDate = document.getElementById('check_in').value;
-        const checkOutDate = document.getElementById('check_out').value;
-        const numDays = await Math.floor((new Date(checkOutDate) - new Date(checkInDate)) / (1000 * 60 * 60 * 24));
-        const price = numDays * roomPrice;
-        // Update button text with formatted price
-        document.getElementById('price').textContent = 'ราคารวม :' + price.toFixed(2) + ' บาท/คืน';
-        document.getElementById('total').value = price
-    }
-
-    // Update price on initial load
-    updatePrice();
-
-    // Update price on change of check-in/out date
-    document.getElementById('check_in').addEventListener('change', updatePrice);
-    document.getElementById('check_out').addEventListener('change', updatePrice);
 </script> -->

@@ -43,6 +43,8 @@
                             </h3>
                             <p class="mt-1 text-sm font-medium text-gray-900">ราคา :
                                 <?= number_format($row['product_price'], 2) ?> บาท</p>
+                            <p class="mt-1 text-sm font-medium text-gray-900">คงเหลือ :
+                                <?= number_format($row['stock']) ?> ชิ้น</p>
                             <p class="mt-1 text-sm text-gray-500"><?= htmlspecialchars($row['product_detail']) ?></p>
                         </div>
                         <?php

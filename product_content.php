@@ -10,6 +10,7 @@ if ($id = isset($_GET['id']) ? $_GET['id'] : null) {
     $productdetail = $row['product_detail'];
     $productprice = $row['product_price'];
     $producttype = $row['product_type'];
+    $productstock = $row['stock'];
 }
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
@@ -91,6 +92,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
                     <div class="mt-3">
                         <p class="text-3xl tracking-tight text-gray-900">ราคา : <?php echo "$productprice" ?> บาท</p>
+                    </div>
+                    <div class="mt-3">
+                        <p class="text-sm tracking-tight text-gray-900">คงเหลือ : <?php echo "$productstock" ?> ชิ้น</p>
                     </div>
                     <div class="mt-3">
                         <p class="text-xl tracking-tight text-gray-900">ประเภท : <?php echo "$producttype" ?></p>
