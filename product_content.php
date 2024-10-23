@@ -2,6 +2,8 @@
 session_start();
 include "dbconnect.php";
 include "nav_bar.php";
+error_reporting(E_ALL & ~E_WARNING); // ปิดเฉพาะ Warning
+
 
 if ($id = isset($_GET['id']) ? $_GET['id'] : null) {
     $query = mysqli_query($conn, "SELECT * FROM `products` WHERE product_id=$id");
@@ -16,12 +18,12 @@ if ($id = isset($_GET['id']) ? $_GET['id'] : null) {
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $product_id = $_POST['product_id'];
     $user_id = $_SESSION['user_id']; // ตรวจสอบว่า user_id ถูกเก็บใน session หรือไม่
-    
+
     if ($user_id) {
         // ตรวจสอบว่าสินค้าอยู่ในตะกร้าหรือยัง
         $check_cart_query = "SELECT * FROM `cart` WHERE `user_id` = '$user_id' AND `product_id` = '$product_id'";
         $check_cart_result = mysqli_query($conn, $check_cart_query);
-        
+
         if (mysqli_num_rows($check_cart_result) > 0) {
             // ถ้าสินค้าอยู่ในตะกร้าแล้ว ให้แสดงข้อความเตือนโดยใช้ SweetAlert
             echo "<script>
@@ -53,13 +55,24 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             }
         }
     } else {
-        echo "<script>
-            Swal.fire({
-                icon: 'info',
-                title: 'กรุณาเข้าสู่ระบบ',
-                text: 'คุณต้องเข้าสู่ระบบก่อนเพิ่มสินค้าในตะกร้า!'
-            });
-        </script>";
+        echo '<script>
+                    window.onload = function() {
+                        Swal.fire({
+                            title: "กรุณาเข้าสู่ระบบ",
+                            html: "จะสามารถสั่งสินค้าได้เมื่อเป็นสมาชิก",
+                            icon: "info",
+                            confirmButtonText: "ตกลง",
+                            customClass: {
+                            popup: "swal-wide",
+                            confirmButton: "swal-button"
+                        }
+                        }).then(function() {
+                            window.location.href = "login.php";
+                        });
+                    };
+                </script>';
+            exit();
+
     }
 }
 ?>
@@ -77,12 +90,14 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
 <body>
     <div class="bg-white">
-        <div class="mx-auto max-w-2xl bg-gray-100 mt-2 rounded-lg shadow-md px-4 py-16 sm:px-6 sm:py-24 lg:max-w-7xl lg:px-8">
+        <div
+            class="mx-auto max-w-2xl bg-gray-100 mt-2 rounded-lg shadow-md px-4 py-16 sm:px-6 sm:py-24 lg:max-w-7xl lg:px-8">
             <div class="lg:grid lg:grid-cols-2 lg:items-start lg:gap-x-8">
                 <div class="flex flex-col-reverse">
                     <div class="aspect-h-1 aspect-w-1 w-full">
                         <div id="tabs-1-panel-1" aria-labelledby="tabs-1-tab-1" role="tabpanel" tabindex="0">
-                            <img src="<?= htmlspecialchars($row['product_img']) ?>" alt="รูปสินค้า" class="h-2/3 w-2/3 m-16 px-4 sm:mt-16 sm:px-0 lg:mt-0 object-cover object-center sm:rounded-lg">
+                            <img src="<?= htmlspecialchars($row['product_img']) ?>" alt="รูปสินค้า"
+                                class="h-2/3 w-2/3 m-16 px-4 sm:mt-16 sm:px-0 lg:mt-0 object-cover object-center sm:rounded-lg">
                         </div>
                     </div>
                 </div>
@@ -110,7 +125,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     <form method="POST">
                         <input type="hidden" name="product_id" value="<?php echo $id; ?>">
                         <div class="mt-10 flex">
-                            <button type="submit" class="flex max-w-xs flex-1 items-center justify-center rounded-md border border-transparent bg-indigo-600 px-8 py-3 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-gray-50 sm:w-full">
+                            <button type="submit"
+                                class="flex max-w-xs flex-1 items-center justify-center rounded-md border border-transparent bg-indigo-600 px-8 py-3 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-gray-50 sm:w-full">
                                 เพิ่มลงในตะกร้า
                             </button>
                         </div>
@@ -122,3 +138,30 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 </body>
 
 </html>
+
+<div class="content_container" style="margin-left:20%; margin-right:20%; margin-top:30px; text-align:center;">
+    <div class="signupcontent" style="text-align:center;">
+        <h1 style="text-align:center">แก้ไขข้อมูล</h1><br>
+        <form action="" method="post" style="text-align:center" class="editform">
+            <h3 style="padding-bottom:0px; margin-bottom:0px;">ชื่อจริง</h3>
+            <input type="text" name="first_name" style="Width:75%; height:13px; padding:8px;"
+                value="<?php echo $firstname; ?>"><br>
+            <h3 style="padding-bottom:0px; margin-bottom:0px;">นามสกุล</h3>
+            <input type="text" name="last_name" style="Width:75%; height:13px; padding:8px;"
+                value="<?php echo $lastname; ?>"><br>
+            <h3 style="padding-bottom:0px; margin-bottom:0px;">อีเมล</h3>
+            <input type="email" name="email" style="Width:75%; height:13px; padding:8px;"
+                value="<?php echo $email; ?>"><br>
+            <h3 style="padding-bottom:0px; margin-bottom:0px;">รหัสผ่าน</h3>
+            <input type="text" name="password" style="Width:75%; height:13px; padding:8px;"
+                value="<?php echo $password; ?>"><br>
+            <h3 style="padding-bottom:0px; margin-bottom:0px;">เบอร์โทรศัพท์</h3>
+            <input type="text" name="phone" style="Width:75%; height:13px; padding:8px;"
+                value="<?php echo $phone_number; ?>"><br>
+            <h3 style="padding-bottom:0px; margin-bottom:0px;">ที่อยู่สำหรับจัดส่ง</h3>
+            <input type="text" name="address" style="Width:75%; height:200px; padding:8px;"
+                value="<?php echo $address; ?>"><br>
+            <p><input type="submit" value="ยืนยัน" style="Width:20%; height:25px;" name="submit"></p>
+        </form>
+    </div>
+</div>

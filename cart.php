@@ -1,6 +1,4 @@
 <script src="https://cdn.tailwindcss.com"></script>
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
-
 
 <?php
 session_start();
@@ -41,11 +39,6 @@ if (isset($_SESSION['user_id'])) {
 
     // คำนวณยอดรวมทั้งหมด
     $total = $subtotal;
-
-
-    // // ส่งยอดรวมใหม่กลับไปที่หน้าเว็บ
-    // $response = array('total' => number_format($total, 2));
-    // echo json_encode($response);
 
     // ดึงข้อมูลสินค้าที่ผู้ใช้งานเพิ่มในตะกร้า
     $sql = "
@@ -231,7 +224,7 @@ include "nav_bar.php"; // เรียกไฟล์ nav_bar.php
                         </div>
                     </div>
                     <!-- Hidden input field สำหรับเก็บยอดรวม -->
-                    <input type="" name="total_price" id="hidden-total" value="0" />
+                    <input type="hidden" name="total_price" id="hidden-total" value="0" />
                     
                     <div class=" items-center border-t border-gray-200 pt-4">
                         <dt class="text-base font-medium text-gray-900">ที่อยู่การจัดส่ง</dt>
@@ -292,61 +285,3 @@ include "nav_bar.php"; // เรียกไฟล์ nav_bar.php
     window.addEventListener('load', calculateTotal);
 </script>
 
-
-
-
-
-<!-- <script>
-$(document).ready(function () {
-    var totalOrderSum = 0;  // ตัวแปรเก็บยอดรวมของสินค้าทั้งหมด
-
-    // คำนวณยอดรวมเริ่มต้นของสินค้าทั้งหมด
-    $('.quantity-input').each(function () {
-        var productPrice = $(this).data('product-price');
-        var quantity = $(this).val();
-        totalOrderSum += productPrice * quantity;
-    });
-
-    // แสดงยอดรวมเริ่มต้น
-    $('#order-total').text(totalOrderSum.toFixed(2) + ' บาท');
-
-    $('.quantity-input').on('change', function () {
-        var productId = $(this).data('product-id');
-        var productPrice = $(this).data('product-price');
-        var newQuantity = $(this).val();
-
-        // คำนวณยอดรวมของสินค้านั้น ๆ
-        var itemTotal = productPrice * newQuantity;
-
-        console.log("productId", productId);
-        console.log("productPrice", productPrice);
-        console.log("newQuantity", newQuantity);
-        console.log("itemTotal", itemTotal);
-
-        // คำนวณยอดรวมใหม่ทั้งหมด
-        totalOrderSum = 0;
-        $('.quantity-input').each(function () {
-            var price = $(this).data('product-price');
-            var qty = $(this).val();
-            totalOrderSum += price * qty;
-        });
-
-        // อัปเดตยอดรวมทั้งหมดในหน้าเว็บ
-        $('#order-total').text(totalOrderSum.toFixed(2) + ' บาท');
-
-        // ส่งข้อมูลไปที่ PHP เพื่ออัปเดตจำนวนสินค้าในตะกร้า
-        $.ajax({
-            url: '',  // PHP script ที่จะอัปเดตตะกร้า
-            method: 'POST',
-            data: {
-                product_id: productId,
-                quantity: newQuantity
-            },
-            success: function (response) {
-                // ในกรณีที่ต้องการรับค่าตอบกลับจาก server
-                console.log("Response: ", response);
-            }
-        });
-    });
-});
-</script> -->

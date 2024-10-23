@@ -53,6 +53,7 @@ if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
                         <th class="px-4 py-2 text-sm font-medium text-gray-700 ">รูปภาพ</th>
                         <th class="px-4 py-2 text-sm font-medium text-gray-700">ชื่อสินค้า</th>
                         <th class="px-4 py-2 text-sm font-medium text-gray-700">ราคา</th>
+                        <th class="px-4 py-2 text-sm font-medium text-gray-700">จำนวน</th>
                         <th class="px-4 py-2 text-sm font-medium text-gray-700">ประเภท</th>
                         <th class="px-4 py-2 text-sm font-medium text-gray-700">รายละเอียด</th>
                         <th class="px-4 py-2 text-sm font-medium text-gray-700"></th>
@@ -79,6 +80,9 @@ if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
 
                                 <td class="px-4 py-2 text-sm text-gray-700">
                                     <?php echo htmlspecialchars($row['product_price']); ?>
+                                </td>
+                                <td class="px-4 py-2 text-sm text-gray-700">
+                                    <?php echo htmlspecialchars($row['stock']); ?>
                                 </td>
                                 <td class="px-4 py-2 text-sm text-gray-700">
                                     <?php echo htmlspecialchars($row['product_type']); ?>

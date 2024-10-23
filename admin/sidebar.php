@@ -19,9 +19,7 @@
             <li class="mb-4">
                 <a href="customer_data.php" class="text-gray-300 hover:text-white">ลูกค้า</a>
             </li>
-            <li class="mb-4">
-                <a href="report_admin.php" class="text-gray-300 hover:text-white">รายงาน</a>
-            </li>
+   
             <li class="mb-4">
                 <a href="#" class="text-red-300 hover:text-white" onclick="confirmLogout()">ออกจากระบบ</a>
             </li>

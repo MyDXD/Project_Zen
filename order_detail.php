@@ -61,11 +61,12 @@ $order_items_result = mysqli_query($conn, $order_items_query);
                     <?php while ($item = mysqli_fetch_assoc($order_items_result)): ?>
                         <tr>
                             <td class="px-6 py-4 whitespace-nowrap">
-                                <img src="<?php echo $item['product_img']; ?>" alt="<?php echo $item['product_name']; ?>" class="h-12 w-12 rounded-md object-cover">
-                                <?php echo $item['product_name']; ?>
+                                <img src="<?php echo $item['product_img']; ?>" alt="<?php echo $item['product_name']; ?>" class="h-32 w-32 rounded-md object-cover">
+                                <p><?php echo $item['product_name']; ?></p>
+                                <p><?php echo number_format($item['price'], 2); ?></p>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap"><?php echo $item['quantity']; ?></td>
-                            <td class="px-6 py-4 whitespace-nowrap"><?php echo number_format($item['price'], 2); ?> บาท</td>
+                            <td class="px-6 py-4 whitespace-nowrap"><?php echo number_format($item['price']*$item['quantity'], 2); ?> บาท</td>
                         </tr>
                     <?php endwhile; ?>
                 </tbody>

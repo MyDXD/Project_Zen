@@ -8,6 +8,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $product_price = $_POST['product_price'];
     $product_detail = $_POST['product_detail'];
     $product_type = $_POST['product_type'];
+    $stock = $_POST['stock'];
 
     // อัพโหลดภาพ
     if (isset($_FILES['product_img']) && $_FILES['product_img']['error'] == 0) {
@@ -22,16 +23,16 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         if (move_uploaded_file($_FILES["product_img"]["tmp_name"], $target_file)) {
             // ถ้าย้ายไฟล์สำเร็จ เก็บชื่อไฟล์ลงในฐานข้อมูล
             $img_path = "product_pic/" . $file_name;
-            $sql = "INSERT INTO products (product_name, product_price, product_detail, product_img, product_type) 
-                    VALUES ('$product_name', '$product_price', '$product_detail', '$img_path', '$product_type')";
+            $sql = "INSERT INTO products (product_name, product_price, product_detail, product_img, product_type,stock) 
+                    VALUES ('$product_name', '$product_price', '$product_detail', '$img_path', '$product_type','$stock')";
         } else {
             echo "เกิดข้อผิดพลาดในการอัปโหลดไฟล์";
             exit();
         }
     } else {
         // ถ้าไม่มีการอัปโหลดภาพ เก็บข้อมูลอื่น ๆ โดยไม่ต้องมี product_img
-        $sql = "INSERT INTO products (product_name, product_price, product_detail, product_type) 
-                VALUES ('$product_name', '$product_price', '$product_detail', '$product_type')";
+        $sql = "INSERT INTO products (product_name, product_price, product_detail, product_type,stock) 
+                VALUES ('$product_name', '$product_price', '$product_detail', '$product_type','$stock')";
     }
 
     // แทรกข้อมูลลงในฐานข้อมูล
@@ -71,6 +72,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             <div class="mb-4">
                 <label for="product_price" class="block text-gray-700">ราคา</label>
                 <input type="number" id="product_price" name="product_price" step="0.01"
+                    class="w-full px-3 py-2 border border-gray-300 rounded-lg" required>
+            </div>
+            <div class="mb-4">
+                <label for="stock" class="block text-gray-700">จำนวน</label>
+                <input type="number" id="stock" name="stock" step="0.01"
                     class="w-full px-3 py-2 border border-gray-300 rounded-lg" required>
             </div>
             <div class="mb-4">
