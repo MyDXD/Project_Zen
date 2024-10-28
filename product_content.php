@@ -138,30 +138,3 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 </body>
 
 </html>
-
-<div class="content_container" style="margin-left:20%; margin-right:20%; margin-top:30px; text-align:center;">
-    <div class="signupcontent" style="text-align:center;">
-        <h1 style="text-align:center">แก้ไขข้อมูล</h1><br>
-        <form action="" method="post" style="text-align:center" class="editform">
-            <h3 style="padding-bottom:0px; margin-bottom:0px;">ชื่อจริง</h3>
-            <input type="text" name="first_name" style="Width:75%; height:13px; padding:8px;"
-                value="<?php echo $firstname; ?>"><br>
-            <h3 style="padding-bottom:0px; margin-bottom:0px;">นามสกุล</h3>
-            <input type="text" name="last_name" style="Width:75%; height:13px; padding:8px;"
-                value="<?php echo $lastname; ?>"><br>
-            <h3 style="padding-bottom:0px; margin-bottom:0px;">อีเมล</h3>
-            <input type="email" name="email" style="Width:75%; height:13px; padding:8px;"
-                value="<?php echo $email; ?>"><br>
-            <h3 style="padding-bottom:0px; margin-bottom:0px;">รหัสผ่าน</h3>
-            <input type="text" name="password" style="Width:75%; height:13px; padding:8px;"
-                value="<?php echo $password; ?>"><br>
-            <h3 style="padding-bottom:0px; margin-bottom:0px;">เบอร์โทรศัพท์</h3>
-            <input type="text" name="phone" style="Width:75%; height:13px; padding:8px;"
-                value="<?php echo $phone_number; ?>"><br>
-            <h3 style="padding-bottom:0px; margin-bottom:0px;">ที่อยู่สำหรับจัดส่ง</h3>
-            <input type="text" name="address" style="Width:75%; height:200px; padding:8px;"
-                value="<?php echo $address; ?>"><br>
-            <p><input type="submit" value="ยืนยัน" style="Width:20%; height:25px;" name="submit"></p>
-        </form>
-    </div>
-</div>

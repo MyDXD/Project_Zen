@@ -67,6 +67,7 @@ $order_items_result = mysqli_query($conn, $order_items_query);
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap"><?php echo $item['quantity']; ?></td>
                             <td class="px-6 py-4 whitespace-nowrap"><?php echo number_format($item['price']*$item['quantity'], 2); ?> บาท</td>
+                            <td class="px-6 py-4 whitespace-nowrap"><?php echo number_format($item['price']*$item['quantity'], 2); ?> บาท</td>
                         </tr>
                     <?php endwhile; ?>
                 </tbody>
