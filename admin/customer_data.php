@@ -60,7 +60,6 @@ if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
                             <th class="px-4 py-2 text-left text-sm font-medium text-gray-700">email</th>
                             <th class="px-4 py-2 text-left text-sm font-medium text-gray-700">ชื่อ</th>
                             <th class="px-4 py-2 text-left text-sm font-medium text-gray-700">นามสกุล</th>
-                            <th class="px-4 py-2 text-left text-sm font-medium text-gray-700">ชื่อเล่น</th>
                             <th class="px-4 py-2 text-left text-sm font-medium text-gray-700">ที่อยู่</th>
                             <th class="px-4 py-2 text-left text-sm font-medium text-gray-700">เบอร์โทร</th>
                             <th class="px-4 py-2 text-left text-sm font-medium text-gray-700">ยศ</th>
@@ -95,9 +94,6 @@ if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
                                         <?php echo htmlspecialchars($row['last_name']); ?>
                                     </td>
                                     <td class="px-4 py-2 text-sm text-gray-700">
-                                        <?php echo htmlspecialchars($row['title_name']); ?>
-                                    </td>
-                                    <td class="px-4 py-2 text-sm text-gray-700">
                                         <?php echo htmlspecialchars($row['address']); ?>
                                     </td>
                                     <td class="px-4 py-2 text-sm text-gray-700">
@@ -111,7 +107,7 @@ if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
                                     <td class="px-4 py-2 text-sm text-gray-700">
                                         <button
                                             class="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400"
-                                            onclick="window.location.href='edit_product.php?id=<?php echo htmlspecialchars($row['user_id']); ?>'">
+                                            onclick="window.location.href='edit_customer.php?id=<?php echo htmlspecialchars($row['user_id']); ?>'">
                                             แก้ไข
                                         </button>
 
@@ -119,7 +115,7 @@ if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
                                     <td class="px-4 py-2 text-sm text-gray-700">
                                         <button
                                             class="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-400"
-                                            onclick="window.location.href='delete_product.php?id=<?php echo htmlspecialchars($row['user_id']); ?>'">
+                                            onclick="window.location.href='delete_customer.php?id=<?php echo htmlspecialchars($row['user_id']); ?>'">
                                             ลบ
                                         </button>
 

@@ -17,7 +17,7 @@
                 <a href="products.php" class="text-gray-300 hover:text-white">สินค้า</a>
             </li>
             <li class="mb-4">
-                <a href="customer_data.php" class="text-gray-300 hover:text-white">ลูกค้า</a>
+                <a href="customer_data.php" class="text-gray-300 hover:text-white">ผู้ใช้งาน</a>
             </li>
    
             <li class="mb-4">
