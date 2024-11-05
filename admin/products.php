@@ -26,10 +26,10 @@ if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
 
 <body class="bg-gray-100">
 
-    <div class="flex">
+    <div class="flex w-full h-screen"> <!-- ตั้งค่าความสูงเต็มหน้าจอ -->
         <?php include 'sidebar.php'; ?>
 
-        <div class="flex-1 p-6 h-screen">
+        <div class="flex-1 p-6 overflow-y-auto h-screen"> <!-- overflow ของส่วน content -->
 
             <div class="flex justify-between items-center mb-6">
                 <h1 class="text-2xl font-semibold">คลังสินค้า</h1>
@@ -46,8 +46,7 @@ if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
                 </div>
             </div>
 
-
-            <table class="min-w-full table-auto bg-white p-6 rounded-lg shadow-md  text-center">
+            <table class="min-w-full bg-white p-6 rounded-lg shadow-md text-center">
                 <thead class="text-center">
                     <tr>
                         <th class="px-4 py-2 text-sm font-medium text-gray-700 ">รูปภาพ</th>
@@ -61,7 +60,7 @@ if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
 
                     </tr>
                 </thead>
-               
+
                 <tbody>
                     <?php if ($result->num_rows > 0): ?>
                         <?php while ($row = $result->fetch_assoc()): ?>
@@ -116,6 +115,7 @@ if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
                     <?php endif; ?>
                 </tbody>
             </table>
+
         </div>
 
 
