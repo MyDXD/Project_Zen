@@ -21,11 +21,11 @@ if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
 
 <body class="bg-gray-100">
     <!-- Sidebar -->
-    <div class="flex">
+    <div class="flex w-full h-screen"> <!-- ตั้งค่าความสูงเต็มหน้าจอ -->
         <?php include 'sidebar.php'; ?>
 
         <!-- Main Content -->
-        <div class="flex-1 p-6">
+        <div class="flex-1 p-6 overflow-y-auto h-screen"> <!-- overflow ของส่วน content -->
             <!-- Navbar -->
             <div class="flex justify-between items-center mb-6">
                 <h1 class="text-2xl font-semibold">Dashboard</h1>

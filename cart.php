@@ -73,13 +73,14 @@ if (isset($_SESSION['user_id'])) {
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     // เพิ่มข้อมูลลงในตาราง orders
     $order_date = date('Y-m-d H:i:s');
-    $order_status = 'pending'; // กำหนดสถานะเริ่มต้น
+    $order_code = 'ORDER_' . uniqid() . mt_rand(100, 999);
+    $order_status = 'Order Placed'; // กำหนดสถานะเริ่มต้น
     $delivery_address = mysqli_real_escape_string($conn, $delivery_address);
     $total_price = $_POST['total_price'];
 
     // เพิ่มคำสั่งซื้อในตาราง orders พร้อมที่อยู่การจัดส่ง
-    $order_query = "INSERT INTO orders (user_id, total_price, order_status, order_date, delivery_address) 
-                    VALUES ('$user_id', '$total_price', '$order_status', '$order_date', '$delivery_address')";
+    $order_query = "INSERT INTO orders (order_code,user_id, total_price, order_status, order_date, delivery_address) 
+                    VALUES ('$order_code','$user_id', '$total_price', '$order_status', '$order_date', '$delivery_address')";
 
     if (mysqli_query($conn, $order_query)) {
         // ดึง order_id ที่เพิ่งถูกสร้าง

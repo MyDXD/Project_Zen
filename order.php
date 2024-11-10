@@ -26,42 +26,62 @@ if (!$result) {
 }
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-
-    // ตรวจสอบว่ามีการส่งค่า order_id มาจากฟอร์มหรือไม่
-    if (isset($_POST['order_id'])) {
+    // ตรวจสอบว่ามีการส่งค่า order_id มาจากฟอร์มเปลี่ยนสถานะหรือไม่
+    if (isset($_POST['order_id']) && isset($_POST['action'])) {
         $order_id = $_POST['order_id'];
+        $action = $_POST['action'];
 
+        // กำหนดสถานะใหม่ตาม action ที่ส่งมา
+        if ($action == 'confirm') {
+            $new_status = 'Completed';
+        } elseif ($action == 'cancel') {
+            $new_status = 'Cancelled';
+        } else {
+            echo "การดำเนินการไม่ถูกต้อง";
+            exit();
+        }
 
         // ตรวจสอบคำสั่งซื้อที่เป็นของผู้ใช้ปัจจุบัน
         $order_query = "SELECT * FROM orders WHERE order_id = '$order_id' AND user_id = '$user_id'";
         $order_result = mysqli_query($conn, $order_query);
 
-
-        // อัพโหลดภาพ
-        if (isset($_FILES['payment_slip']) && $_FILES['payment_slip']['error'] == 0) {
-            // กำหนดโฟลเดอร์สำหรับจัดเก็บรูปภาพ
-            $target_dir = "./payment_slip/";
-
-            // สร้างชื่อไฟล์ไม่ให้ซ้ำกัน (ใช้ uniqid เพื่อสุ่มชื่อไฟล์)
-            $file_name = uniqid() . basename($_FILES["payment_slip"]["name"]);
-            $target_file = $target_dir . $file_name;
-
-            // ย้ายไฟล์ไปยังโฟลเดอร์ product_pic
-            if (move_uploaded_file($_FILES["payment_slip"]["tmp_name"], $target_file)) {
-                // ถ้าย้ายไฟล์สำเร็จ เก็บชื่อไฟล์ลงในฐานข้อมูล
-                $img_path = "payment_slip/" . $file_name;
-                $update_query = "UPDATE orders SET payment_slip = '$img_path', order_status = 'waiting' WHERE order_id = '$order_id'";
-                mysqli_query($conn, $update_query);
-            } else {
-                echo "เกิดข้อผิดพลาดในการอัปโหลดไฟล์";
+        if (mysqli_num_rows($order_result) > 0) {
+            // อัปเดตสถานะคำสั่งซื้อ
+            $update_query = "UPDATE orders SET order_status = '$new_status' WHERE order_id = '$order_id'";
+            if (!mysqli_query($conn, $update_query)) {
+                echo "เกิดข้อผิดพลาดในการอัปเดตสถานะคำสั่งซื้อ: " . mysqli_error($conn);
                 exit();
             }
+        } else {
+            echo "ไม่พบคำสั่งซื้อที่ตรงกับผู้ใช้ปัจจุบัน";
+            exit();
         }
-        header("Location: order.php");
-        exit(); // ทำให้แน่ใจว่าไม่มียูโค้ดต่อจากนี้ที่ถูกดำเนินการ
-    } else {
-        echo "ไม่พบคำสั่งซื้อ";
+
+        // ตรวจสอบว่ามีการอัปโหลดไฟล์หลักฐานการโอนเงินหรือไม่
+    } elseif (isset($_FILES['payment_slip']) && $_FILES['payment_slip']['error'] == 0) {
+        $order_id = $_POST['order_id'];
+
+        // กำหนดโฟลเดอร์สำหรับจัดเก็บรูปภาพ
+        $target_dir = "./payment_slip/";
+        $file_name = uniqid() . basename($_FILES["payment_slip"]["name"]);
+        $target_file = $target_dir . $file_name;
+
+        // ย้ายไฟล์ไปยังโฟลเดอร์ payment_slip
+        if (move_uploaded_file($_FILES["payment_slip"]["tmp_name"], $target_file)) {
+            $img_path = "payment_slip/" . $file_name;
+            $update_query = "UPDATE orders SET payment_slip = '$img_path', order_status = 'Payment Received' WHERE order_id = '$order_id'";
+
+            if (!mysqli_query($conn, $update_query)) {
+                echo "เกิดข้อผิดพลาดในการอัปเดตฐานข้อมูล: " . mysqli_error($conn);
+                exit();
+            }
+        } else {
+            echo "เกิดข้อผิดพลาดในการอัปโหลดไฟล์";
+            exit();
+        }
     }
+    header("Location: order.php");
+    exit(); // ทำให้แน่ใจว่าไม่มียูโค้ดต่อจากนี้ที่ถูกดำเนินการ
 }
 ?>
 
@@ -109,7 +129,43 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                                 <td class="px-6 py-4 whitespace-nowrap"><?php echo $row['order_date']; ?></td>
                                 <td class="px-6 py-4 whitespace-nowrap"><?php echo number_format($row['total_price'], 2); ?> บาท
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap"><?php echo ucfirst($row['order_status']); ?></td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <?php
+                                    $statusText = '';
+                                    $statusColor = '';
+
+                                    switch ($row['order_status']) {
+                                        case 'Order Placed':
+                                            $statusText = 'รอชำระเงิน';
+                                            $statusColor = 'bg-yellow-500 text-white';
+                                            break;
+                                        case 'Payment Received':
+                                            $statusText = 'ชำระเงินแล้ว รอตรวจสอบ';
+                                            $statusColor = 'bg-blue-500 text-white';
+                                            break;
+                                        case 'Order Processing':
+                                            $statusText = 'กำลังจัดส่ง';
+                                            $statusColor = 'bg-orange-500 text-white';
+                                            break;
+                                        case 'Completed':
+                                            $statusText = 'จัดส่งสำเร็จ';
+                                            $statusColor = 'bg-green-500 text-white';
+                                            break;
+                                        case 'Cancelled':
+                                            $statusText = 'ยกเลิก';
+                                            $statusColor = 'bg-red-500 text-white';
+                                            break;
+                                        default:
+                                            $statusText = 'ไม่ทราบสถานะ';
+                                            $statusColor = 'bg-gray-500 text-white';
+                                            break;
+                                    }
+                                    ?>
+                                    <span
+                                        class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full <?php echo $statusColor; ?>">
+                                        <?php echo $statusText; ?>
+                                    </span>
+                                </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <a href="order_detail.php?order_id=<?php echo $row['order_id']; ?>"
                                         class="text-indigo-600  hover:text-indigo-900"><svg xmlns="http://www.w3.org/2000/svg"
@@ -142,8 +198,28 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                                             class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-700">
                                             อัปโหลดหลักฐานการโอนเงิน
                                         </button>
+                                        <form id="orderForm" method="POST" action="">
+                                            <input type="hidden" name="order_id" value="<?php echo $row['order_id']; ?>">
+
+                                            <button type="button" onclick="confirmAction('cancel')"
+                                                class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-700">ยกเลิก</button>
+                                            <input type="hidden" id="actionInput" name="action" value="">
+                                        </form>
                                     <?php endif; ?>
                                 </td>
+                                <!-- เงื่อนไขแสดงปุ่มยืนยันรับสินค้า หรือยกเลิก -->
+                                <?php if ($row['order_status'] == 'Order Processing'): ?>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <form id="orderForm" method="POST" action="">
+                                            <input type="hidden" name="order_id" value="<?php echo $row['order_id']; ?>">
+                                            <button type="button" onclick="confirmAction('confirm')"
+                                                class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-700">ยืนยันรับสินค้า</button>
+                                            <button type="button" onclick="confirmAction('cancel')"
+                                                class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-700">ยกเลิก</button>
+                                            <input type="hidden" id="actionInput" name="action" value="">
+                                        </form>
+                                    </td>
+                                <?php endif; ?>
                             </tr>
                         <?php endwhile; ?>
                     </tbody>
@@ -178,8 +254,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                         <input type="file" name="payment_slip" accept="image/*"
                             class="mt-2 mb-4 block w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 cursor-pointer focus:outline-none">
 
-                        <button type="submit"
+                        <button type="submit" name="upload_slip"
                             class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-700 w-full">ส่งหลักฐานการโอนเงิน</button>
+
                     </form>
 
                     <!-- ปุ่มปิด Modal -->
@@ -223,6 +300,26 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         document.getElementById('paymentModal').classList.add('hidden');
     }
 
+    function confirmAction(action) {
+        // เรียกใช้ SweetAlert เพื่อแจ้งเตือน
+        const actionText = action === 'confirm' ? 'ยืนยันรับสินค้า' : 'ยกเลิก';
+        Swal.fire({
+            title: 'คุณแน่ใจหรือไม่?',
+            text: `คุณต้องการ${actionText}ใช่หรือไม่?`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: action === 'confirm' ? '#28a745' : '#dc3545',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: 'ใช่',
+            cancelButtonText: 'ไม่ใช่'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // ถ้ายืนยัน ให้ส่งฟอร์ม
+                document.getElementById('actionInput').value = action;
+                document.getElementById('orderForm').submit();
+            }
+        });
+    }
 
 
 </script>

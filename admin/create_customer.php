@@ -13,8 +13,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $address = $_POST['address'];
 
     // สร้าง SQL Query
-    $sql = "INSERT INTO userdata (first_name, last_name, email, password, phone_number, address , title_name) 
-            VALUES ('$first_name', '$last_name', '$email', '$password', '$phone_number', '$address' , 'title_name')";
+    $sql = "INSERT INTO userdata (first_name, last_name, email, password, phone_number, address)
+            VALUES ('$first_name', '$last_name', '$email', '$password', '$phone_number', '$address' )";
 
     // แทรกข้อมูลลงในฐานข้อมูล
     if (mysqli_query($conn, $sql)) {
