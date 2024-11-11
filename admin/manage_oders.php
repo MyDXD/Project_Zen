@@ -1,3 +1,5 @@
+<script src="https://cdn.tailwindcss.com"></script>
+
 <?php
 include "../dbconnect.php";
 session_start();
@@ -122,7 +124,39 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                 echo "<td class='py-3 px-4'>" . $row['order_code'] . "</td>";
                                 echo "<td class='py-3 px-4'>" . $row['first_name'] . " " . $row['last_name'] . "</td>";
                                 echo "<td class='py-3 px-4'>" . $row['order_date'] . "</td>";
-                                echo "<td class='py-3 px-4'>" . $row['order_status'] . "</td>";
+                                // สถานะ
+                                echo "<td class='px-6 py-4 whitespace-nowrap'>";
+                                $statusText = '';
+                                $statusColor = '';
+
+                                switch ($row['order_status']) {
+                                    case 'Order Placed':
+                                        $statusText = 'รอชำระเงิน';
+                                        $statusColor = 'bg-yellow-500 text-white';
+                                        break;
+                                    case 'Payment Received':
+                                        $statusText = 'ชำระเงินแล้ว รอตรวจสอบ';
+                                        $statusColor = 'bg-blue-500 text-white';
+                                        break;
+                                    case 'Order Processing':
+                                        $statusText = 'กำลังจัดส่ง';
+                                        $statusColor = 'bg-orange-500 text-white';
+                                        break;
+                                    case 'Completed':
+                                        $statusText = 'จัดส่งสำเร็จ';
+                                        $statusColor = 'bg-green-500 text-white';
+                                        break;
+                                    case 'Cancelled':
+                                        $statusText = 'ยกเลิก';
+                                        $statusColor = 'bg-red-500 text-white';
+                                        break;
+                                    default:
+                                        $statusText = 'ไม่ทราบสถานะ';
+                                        $statusColor = 'bg-gray-500 text-white';
+                                        break;
+                                }
+                                echo "<span class='px-2 inline-flex text-xs leading-5 font-semibold rounded-full $statusColor'>$statusText</span>";
+                                echo "</td>";
                                 echo "<td class='py-3 px-4'>฿ " . number_format($row['total_price'], 2) . "</td>";
                                 // แสดงรูปภาพหลักฐานการชำระเงิน (ถ้ามี)
                                 echo "<td class='py-3 px-4 flex items-center'>";

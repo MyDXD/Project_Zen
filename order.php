@@ -12,7 +12,7 @@ $user_id = $_SESSION['user_id']; // ดึง user_id จาก session
 
 // ดึงข้อมูลคำสั่งซื้อของผู้ใช้
 $order_query = "
-    SELECT orders.order_id, orders.total_price, orders.order_status, orders.order_date ,orders.payment_slip
+    SELECT orders.order_id, orders.total_price, orders.order_status, orders.order_date ,orders.payment_slip ,orders.order_code
     FROM orders
     WHERE orders.user_id = '$user_id'
     ORDER BY orders.order_date DESC
@@ -109,6 +109,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                         <tr>
 
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                หมายเลขคำสั่งซื้อ
+                            </th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 วันที่
                             </th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ราคา
@@ -126,6 +129,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     <tbody class="bg-white divide-y divide-gray-200">
                         <?php while ($row = mysqli_fetch_assoc($result)): ?>
                             <tr>
+                                <td class="px-6 py-4 whitespace-nowrap"><?php echo $row['order_code']; ?></td>
                                 <td class="px-6 py-4 whitespace-nowrap"><?php echo $row['order_date']; ?></td>
                                 <td class="px-6 py-4 whitespace-nowrap"><?php echo number_format($row['total_price'], 2); ?> บาท
                                 </td>
@@ -183,43 +187,52 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                                         <!-- หากมีสลิปจะแสดงรูปสลิปและปุ่มแก้ไข -->
                                         <img src="./<?php echo htmlspecialchars($row['payment_slip']); ?>" alt="Slip Image"
                                             class="w-24 h-24 rounded-md cursor-pointer" onclick="showFullScreenModal(this.src)" />
-                                        <button onclick="openModal('<?php echo $row['order_id']; ?>')"
-                                            class="bg-green-500 h-10 text-blue px-4 py-2 mt-5 ml-5 rounded hover:bg-green-700">
-                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                                stroke-width="1.5" stroke="currentColor" class="size-6">
-                                                <path stroke-linecap="round" stroke-linejoin="round"
-                                                    d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" />
-                                            </svg>
+                                        <?php if ($row['order_status'] != 'Completed' && $row['order_status'] != 'Order Processing'): ?>
+                                            <button onclick="openModal('<?php echo $row['order_id']; ?>')"
+                                                class="h-10 text-blue px-4 py-2 mt-5 ml-5 rounded">
+                                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                                    stroke-width="1.5" stroke="currentColor" class="size-6">
+                                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                                        d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" />
+                                                </svg>
+                                                แก้ไขสลิป
+                                            </button>
+                                        <?php endif; ?>
 
-                                        </button>
                                     <?php else: ?>
                                         <!-- หากยังไม่มีสลิปจะแสดงปุ่มอัปโหลด -->
-                                        <button onclick="openModal('<?php echo $row['order_id']; ?>')"
-                                            class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-700">
-                                            อัปโหลดหลักฐานการโอนเงิน
-                                        </button>
-                                        <form id="orderForm" method="POST" action="">
-                                            <input type="hidden" name="order_id" value="<?php echo $row['order_id']; ?>">
+                                        <?php if ($row['order_status'] != 'Cancelled'): ?>
+                                            <button onclick="openModal('<?php echo $row['order_id']; ?>')"
+                                                class="bg-indigo-400 text-white px-2 rounded hover:bg-blue-700">
+                                                อัปโหลดหลักฐานการโอนเงิน
+                                            </button>
+                                        <?php endif; ?>
 
+                                        <?php if ($row['order_status'] == 'Order Placed'): ?>
+                                            <form id="orderForm" method="POST" action="">
+                                                <input type="hidden" name="order_id" value="<?php echo $row['order_id']; ?>">
+
+                                                <button type="button" onclick="confirmAction('cancel')"
+                                                    class="bg-red-400 text-white ml-5 px-4 py-2 rounded hover:bg-red-700">ยกเลิก</button>
+                                                <input type="hidden" id="actionInput" name="action" value="">
+                                            </form>
+                                        <?php endif; ?>
+
+                                    <?php endif; ?>
+                                    <!-- เงื่อนไขแสดงปุ่มยืนยันรับสินค้า หรือยกเลิก -->
+                                    <?php if ($row['order_status'] == 'Order Processing'): ?>
+                                        <form id="orderForm" class="p-5 m-2" method="POST" action="">
+                                            <input type="hidden" name="order_id" value="<?php echo $row['order_id']; ?>">
+                                            <button type="button" onclick="confirmAction('confirm')"
+                                                class="bg-green-500 text-white px-2 py-1 rounded hover:bg-green-700">ยืนยันรับสินค้า</button>
                                             <button type="button" onclick="confirmAction('cancel')"
-                                                class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-700">ยกเลิก</button>
+                                                class="bg-red-400 text-white px-2 py-1 rounded hover:bg-red-700">ไม่รับสินค้า</button>
                                             <input type="hidden" id="actionInput" name="action" value="">
                                         </form>
                                     <?php endif; ?>
                                 </td>
-                                <!-- เงื่อนไขแสดงปุ่มยืนยันรับสินค้า หรือยกเลิก -->
-                                <?php if ($row['order_status'] == 'Order Processing'): ?>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <form id="orderForm" method="POST" action="">
-                                            <input type="hidden" name="order_id" value="<?php echo $row['order_id']; ?>">
-                                            <button type="button" onclick="confirmAction('confirm')"
-                                                class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-700">ยืนยันรับสินค้า</button>
-                                            <button type="button" onclick="confirmAction('cancel')"
-                                                class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-700">ยกเลิก</button>
-                                            <input type="hidden" id="actionInput" name="action" value="">
-                                        </form>
-                                    </td>
-                                <?php endif; ?>
+
+
                             </tr>
                         <?php endwhile; ?>
                     </tbody>
