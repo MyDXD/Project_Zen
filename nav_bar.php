@@ -71,7 +71,7 @@
                                 </div>
 
                                 <div class=" items-center justifly-center space-x-8">
-                                    <a href="index.php"
+                                    <a href="products.php"
                                         class="text-sm font-medium text-gray-700 hover:text-gray-800">สินค้าทั้งหมด</a>
 
                                     <a href="contactus.php"
