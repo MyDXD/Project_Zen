@@ -99,7 +99,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
     <?php include 'nav_bar.php'; // เมนูนำทาง ?>
 
-    <div class="container mx-auto mt-10">
+    <div class="container mx-auto mt-10 relative overflow-x-auto">
         <h1 class="text-3xl font-bold mb-5 text-center">รายการคำสั่งซื้อของฉัน</h1>
 
         <?php if (mysqli_num_rows($result) > 0): ?>
