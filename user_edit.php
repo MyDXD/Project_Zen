@@ -40,7 +40,9 @@ if (isset($_POST['submit'])) {
     $phone = mysqli_real_escape_string($conn, $_POST['phone_number']);
     $address = mysqli_real_escape_string($conn, $_POST['address']);
 
-    $update = "UPDATE `userdata` SET `email`='$email', `password`='$password', `first_name`='$firstname', `last_name`='$lastname', `address`='$address', `phone_number`='$phone_number' WHERE user_id=$user_id";
+    $hashed_password = password_hash($password, PASSWORD_DEFAULT);
+
+    $update = "UPDATE `userdata` SET `email`='$email', `password`='$hashed_password', `first_name`='$firstname', `last_name`='$lastname', `address`='$address', `phone_number`='$phone_number' WHERE user_id=$user_id";
     if ($conn->query($update) == TRUE) {
         echo '<script>
                     window.onload = function() {
@@ -58,15 +60,11 @@ if (isset($_POST['submit'])) {
                     };
                     </script>';
     } else {
-        echo "บัคฮะแก้ที";
+        echo "แตก";
     }
 }
 ?>
-<style>
-    .editform input {
-        margin: 5px;
-    }
-</style>
+
 
 <body>
     <div class="bg-white">

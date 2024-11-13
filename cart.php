@@ -69,6 +69,25 @@ if (isset($_SESSION['user_id'])) {
     echo "กรุณาล็อกอินก่อนใช้งานตะกร้า";
 }
 
+
+// ตรวจสอบว่ามีการส่งค่า remove_product_id หรือไม่
+if (isset($_GET['remove_product_id'])) {
+    $product_id = $_GET['remove_product_id'];
+
+    // ลบสินค้าออกจากตาราง cart ของฐานข้อมูล
+    $delete_query = "DELETE FROM cart WHERE product_id = '$product_id' AND user_id = '$user_id'";
+    $delete_result = mysqli_query($conn, $delete_query);
+
+    // ตรวจสอบว่าการลบสำเร็จหรือไม่
+    if ($delete_result) {
+        // ถ้าลบสำเร็จ Redirect กลับไปยังหน้าเดิม
+        header("Location: cart.php");
+        exit();
+    } else {
+        echo "ไม่สามารถลบสินค้าได้";
+    }
+}
+
 // เมื่อกดปุ่มเช็คเอาท์
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     // เพิ่มข้อมูลลงในตาราง orders
@@ -164,26 +183,26 @@ include "nav_bar.php"; // เรียกไฟล์ nav_bar.php
 
                 <ul role="list" class="divide-y divide-gray-200 border-b border-t border-gray-200">
                     <?php foreach ($cart_items as $item): ?>
-                    <li <?php echo $item['product_id'] ?> class="flex py-6 sm:py-10">
-                        <div class="flex-shrink-0">
-                            <img src="<?php echo $item['product_img']; ?>" alt="<?php echo $item['product_name']; ?>"
-                                class="h-24 w-24 rounded-md object-cover object-center sm:h-48 sm:w-48">
-                        </div>
+                        <li <?php echo $item['product_id'] ?> class="flex py-6 sm:py-10">
+                            <div class="flex-shrink-0">
+                                <img src="<?php echo $item['product_img']; ?>" alt="<?php echo $item['product_name']; ?>"
+                                    class="h-24 w-24 rounded-md object-cover object-center sm:h-48 sm:w-48">
+                            </div>
 
-                        <div class="ml-4 flex flex-1 flex-col justify-between sm:ml-6">
-                            <div class="relative pr-9 sm:grid sm:grid-cols-2 sm:gap-x-6 sm:pr-0">
-                                <div>
-                                    <div class="flex justify-between">
-                                        <h3 class="text-sm">
-                                            <a href="#"
-                                                class="font-medium text-gray-700 hover:text-gray-800"><?php echo $item['product_name']; ?></a>
-                                        </h3>
+                            <div class="ml-4 flex flex-1 flex-col justify-between sm:ml-6">
+                                <div class="relative pr-9 sm:grid sm:grid-cols-2 sm:gap-x-6 sm:pr-0">
+                                    <div>
+                                        <div class="flex justify-between">
+                                            <h3 class="text-sm">
+                                                <a href="#"
+                                                    class="font-medium text-gray-700 hover:text-gray-800"><?php echo $item['product_name']; ?></a>
+                                            </h3>
+                                        </div>
+                                        <p class="mt-1 text-sm font-medium text-gray-900">
+                                            ราคาต่อชิ้น <?php echo number_format($item['product_price'], 2); ?> บาท</p>
                                     </div>
-                                    <p class="mt-1 text-sm font-medium text-gray-900">
-                                        ราคาต่อชิ้น <?php echo number_format($item['product_price'], 2); ?> บาท</p>
-                                </div>
 
-                                <?php
+                                    <?php
                                     // ดึงจำนวนสินค้าที่มีในคลังจากฐานข้อมูล
                                     $product_id = $item['product_id'];
                                     $product_price = $item['product_price'];
@@ -196,18 +215,25 @@ include "nav_bar.php"; // เรียกไฟล์ nav_bar.php
                                         $stock = 0; // กำหนดค่าเป็น 0 ถ้าหาข้อมูลสินค้าไม่ได้
                                     }
                                     ?>
+                                    <span>
+                                        <!-- Input สำหรับใส่จำนวนสินค้า โดยมีการจำกัด max ตามจำนวนในคลัง -->
+                                        <input class="w-8 text-center border-1 quantity-input" type="number"
+                                            name="quantity_<?php echo $product_id; ?>" min="1" max="<?php echo $stock; ?>"
+                                            data-price="<?php echo $product_price; ?>"
+                                            value="<?php echo $item['quantity'] ? $item['quantity'] : 1; ?>" />
 
-                                <!-- Input สำหรับใส่จำนวนสินค้า โดยมีการจำกัด max ตามจำนวนในคลัง -->
-                                <input class="w-20 text-center border-1 quantity-input" type="number"
-                                    name="quantity_<?php echo $product_id; ?>" min="1" max="<?php echo $stock; ?>"
-                                    data-price="<?php echo $product_price; ?>"
-                                    value="<?php echo $item['quantity'] ? $item['quantity'] : 1; ?>" />
+                                        <!-- ปุ่มลบสินค้า ที่จะถูกเรียกใช้ด้วย JavaScript -->
+                                        <button type="button" class="mt-2 text-sm text-red-500 hover:text-red-700"
+                                            onclick="confirmRemove(<?php echo $item['product_id']; ?>)">
+                                            ลบสินค้า
+                                        </button>
+                                    </span>
 
-                                <p class="mt-1 text-sm text-gray-700">สินค้าคงเหลือ: <?php echo $stock; ?> ชิ้น</p>
+                                    <p class="mt-1 text-sm text-gray-700">สินค้าคงเหลือ: <?php echo $stock; ?> ชิ้น</p>
+                                </div>
                             </div>
-                        </div>
 
-                    </li>
+                        </li>
                     <?php endforeach; ?>
 
                 </ul>
@@ -263,28 +289,46 @@ include "nav_bar.php"; // เรียกไฟล์ nav_bar.php
 
 <!-- JavaScript สำหรับคำนวณราคารวม -->
 <script>
-// ฟังก์ชันสำหรับคำนวณยอดรวมใหม่
-function calculateTotal() {
-    let total = 0;
-    document.querySelectorAll('.quantity-input').forEach(function(input) {
-        let quantity = parseInt(input.value);
-        let price = parseFloat(input.getAttribute('data-price'));
-        total += quantity * price;
+    // ฟังก์ชันสำหรับยืนยันการลบสินค้าก่อนการลบ
+    function confirmRemove(productId) {
+        Swal.fire({
+            title: 'คุณแน่ใจหรือไม่?',
+            text: "คุณต้องการลบสินค้านี้ออกจากตะกร้า!",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'ใช่, ลบออก',
+            cancelButtonText: 'ยกเลิก'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // ถ้ายืนยันให้ลบสินค้า
+                window.location.href = "cart.php?remove_product_id=" + productId; // ส่งข้อมูลไปที่ cart.php
+            }
+        });
+    }
+    // ฟังก์ชันสำหรับคำนวณยอดรวมใหม่
+    function calculateTotal() {
+        let total = 0;
+        document.querySelectorAll('.quantity-input').forEach(function (input) {
+            let quantity = parseInt(input.value);
+            let price = parseFloat(input.getAttribute('data-price'));
+            total += quantity * price;
+        });
+        // แสดงยอดรวมใหม่
+        document.getElementById('order-total').textContent = total.toLocaleString('th-TH', {
+            style: 'currency',
+            currency: 'THB'
+        }) + ' บาท';
+        // อัปเดตค่าของ hidden input field
+        document.getElementById('hidden-total').value = total;
+    }
+
+    // ตรวจสอบเมื่อมีการเปลี่ยนแปลงจำนวนสินค้า
+    document.querySelectorAll('.quantity-input').forEach(function (input) {
+        input.addEventListener('input', calculateTotal);
     });
-    // แสดงยอดรวมใหม่
-    document.getElementById('order-total').textContent = total.toLocaleString('th-TH', {
-        style: 'currency',
-        currency: 'THB'
-    }) + ' บาท';
-    // อัปเดตค่าของ hidden input field
-    document.getElementById('hidden-total').value = total;
-}
 
-// ตรวจสอบเมื่อมีการเปลี่ยนแปลงจำนวนสินค้า
-document.querySelectorAll('.quantity-input').forEach(function(input) {
-    input.addEventListener('input', calculateTotal);
-});
-
-// คำนวณยอดรวมเมื่อเริ่มโหลดหน้า
-window.addEventListener('load', calculateTotal);
+    // คำนวณยอดรวมเมื่อเริ่มโหลดหน้า
+    window.addEventListener('load', calculateTotal);
 </script>

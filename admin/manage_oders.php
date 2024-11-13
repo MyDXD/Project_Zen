@@ -72,126 +72,91 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         <?php include 'sidebar.php'; ?>
 
-        <div class="flex-1 p-6 overflow-y-auto h-screen">
-
+        <div class="flex-1 p-4 h-screen overflow-y-auto">
             <!-- Search & Slide Tabs -->
-            <div class="p-4 border-b border-gray-200 flex items-center">
-                <form method="GET" action="" class="flex-1">
-                    <input type="text" name="search" id="searchInput" placeholder="ค้นหาโดยรหัสสั่งซื้อ"
-                        class="p-2 border border-gray-300 rounded-lg w-full" onkeyup="searchOrders()">
+            <div class="p-3 border-b flex items-center">
+                <form method="GET" class="flex-1">
+                    <input type="text" name="search" placeholder="ค้นหาด้วยรหัสสั่งซื้อ"
+                        class="p-1 border rounded w-96 text-sm" onkeyup="searchOrders()">
                 </form>
-                <div class="flex ml-4 space-x-4">
-                    <!-- กำหนดให้ปุ่มแต่ละปุ่มใช้ filterOrders โดยส่ง status ที่ต้องการ -->
-                    <button class="py-2 px-4 text-gray-600 hover:text-blue-500 focus:outline-none"
-                        onclick="filterOrders('all')">ทั้งหมด</button>
-                    <button class="py-2 px-4 text-gray-600 hover:text-blue-500 focus:outline-none"
+                <div class="flex space-x-2 ml-2">
+                    <button class="text-sm hover:text-blue-500" onclick="filterOrders('all')">ทั้งหมด</button>
+                    <button class="text-sm hover:text-blue-500"
                         onclick="filterOrders('Order Placed')">รอชำระเงิน</button>
-                    <button class="py-2 px-4 text-gray-600 hover:text-blue-500 focus:outline-none"
+                    <button class="text-sm hover:text-blue-500"
                         onclick="filterOrders('Payment Received')">รอตรวจสอบ</button>
-                    <button class="py-2 px-4 text-gray-600 hover:text-blue-500 focus:outline-none"
-                        onclick="filterOrders('Order Processing')">ดำเนินการจัดส่ง</button>
-                    <button class="py-2 px-4 text-gray-600 hover:text-blue-500 focus:outline-none"
-                        onclick="filterOrders('Completed')">จัดส่งแล้ว</button>
-                    <button class="py-2 px-4 text-gray-600 hover:text-blue-500 focus:outline-none"
-                        onclick="filterOrders('Cancelled')">ยกเลิก</button>
+                    <button class="text-sm hover:text-blue-500"
+                        onclick="filterOrders('Order Processing')">ดำเนินการ</button>
+                    <button class="text-sm hover:text-blue-500" onclick="filterOrders('Completed')">จัดส่งแล้ว</button>
+                    <button class="text-sm hover:text-blue-500" onclick="filterOrders('Cancelled')">ยกเลิก</button>
                 </div>
             </div>
 
             <!-- Orders Table -->
-            <div id="orders-table" class="p-6">
-                <table class="w-full table-auto text-left">
+            <div id="orders-table" class="p-4">
+                <table class="w-full text-left text-xs">
                     <thead>
-                        <tr class="text-gray-600 border-b border-gray-200">
-                            <th class="py-2 px-4">ID</th>
-                            <th class="py-2 px-4">รหัสคำสั่งซื้อ</th>
-                            <th class="py-2 px-4">ชื่อผู้สั่งซื้อ</th>
-                            <th class="py-2 px-4">วันที่</th>
-                            <th class="py-2 px-4">สถานะ</th>
-                            <th class="py-2 px-4">ยอดรวม</th>
+                        <tr class="border-b text-gray-600">
+                            <th class="p-2">ID</th>
+                            <th class="p-2">รหัสสั่งซื้อ</th>
+                            <th class="p-2">ชื่อผู้สั่งซื้อ</th>
+                            <th class="p-2">วันที่</th>
+                            <th class="p-2">สถานะ</th>
+                            <th class="p-2">ยอดรวม</th>
                             <?php if ($status == 'Payment Received') { ?>
-                                <th class="py-2 px-4">หลักฐานการชำระเงิน</th>
-                                <th class="py-2 px-4">ตรวจสอบ</th>
+                                <th class="p-2">หลักฐาน</th>
+                                <th class="p-2">ตรวจสอบ</th>
                             <?php } ?>
                         </tr>
                     </thead>
                     <tbody>
                         <?php
-
                         if (mysqli_num_rows($result) > 0) {
                             while ($row = mysqli_fetch_assoc($result)) {
                                 echo "<tr class='border-b'>";
-                                echo "<td class='py-3 px-4'>" . $row['order_id'] . "</td>";
-                                echo "<td class='py-3 px-4'>" . $row['order_code'] . "</td>";
-                                echo "<td class='py-3 px-4'>" . $row['first_name'] . " " . $row['last_name'] . "</td>";
-                                echo "<td class='py-3 px-4'>" . $row['order_date'] . "</td>";
-                                // สถานะ
-                                echo "<td class='px-6 py-4 whitespace-nowrap'>";
-                                $statusText = '';
-                                $statusColor = '';
-
-                                switch ($row['order_status']) {
-                                    case 'Order Placed':
-                                        $statusText = 'รอชำระเงิน';
-                                        $statusColor = 'bg-yellow-500 text-white';
-                                        break;
-                                    case 'Payment Received':
-                                        $statusText = 'ชำระเงินแล้ว รอตรวจสอบ';
-                                        $statusColor = 'bg-blue-500 text-white';
-                                        break;
-                                    case 'Order Processing':
-                                        $statusText = 'กำลังจัดส่ง';
-                                        $statusColor = 'bg-orange-500 text-white';
-                                        break;
-                                    case 'Completed':
-                                        $statusText = 'จัดส่งสำเร็จ';
-                                        $statusColor = 'bg-green-500 text-white';
-                                        break;
-                                    case 'Cancelled':
-                                        $statusText = 'ยกเลิก';
-                                        $statusColor = 'bg-red-500 text-white';
-                                        break;
-                                    default:
-                                        $statusText = 'ไม่ทราบสถานะ';
-                                        $statusColor = 'bg-gray-500 text-white';
-                                        break;
-                                }
-                                echo "<span class='px-2 inline-flex text-xs leading-5 font-semibold rounded-full $statusColor'>$statusText</span>";
+                                echo "<td class='p-2'>" . $row['order_id'] . "</td>";
+                                echo "<td class='p-2'>" . $row['order_code'] . "</td>";
+                                echo "<td class='p-2'>" . $row['first_name'] . " " . $row['last_name'] . "</td>";
+                                echo "<td class='p-2'>" . $row['order_date'] . "</td>";
+                                echo "<td class='p-2'>";
+                                $statusMap = [
+                                    'Order Placed' => ['รอชำระเงิน', 'bg-yellow-500 text-white'],
+                                    'Payment Received' => ['ชำระแล้ว', 'bg-blue-500 text-white'],
+                                    'Order Processing' => ['กำลังจัดส่ง', 'bg-orange-500 text-white'],
+                                    'Completed' => ['สำเร็จ', 'bg-green-500 text-white'],
+                                    'Cancelled' => ['ยกเลิก', 'bg-red-500 text-white']
+                                ];
+                                $statusInfo = $statusMap[$row['order_status']] ?? ['ไม่ทราบ', 'bg-gray-500 text-white'];
+                                echo "<span class='px-2 rounded-full {$statusInfo[1]}'>{$statusInfo[0]}</span>";
                                 echo "</td>";
-                                echo "<td class='py-3 px-4'>฿ " . number_format($row['total_price'], 2) . "</td>";
-                                // แสดงรูปภาพหลักฐานการชำระเงิน (ถ้ามี)
-                                echo "<td class='py-3 px-4 flex items-center'>";
+                                echo "<td class='p-2'>฿" . number_format($row['total_price'], 2) . "</td>";
+
                                 if (!empty($row['payment_slip'])) {
-                                    // หากมีสลิปแสดงรูปภาพหลักฐานการชำระเงิน
-                                    echo "<img src='../" . htmlspecialchars($row['payment_slip']) . "' alt='Slip Image' class='w-24 h-24 rounded-md cursor-pointer' onclick='showFullScreenModal(this.src)' />";
+                                    echo "<td class='p-2'><img src='../" . htmlspecialchars($row['payment_slip']) . "' alt='Slip' class='w-16 h-16 rounded cursor-pointer' onclick='showFullScreenModal(this.src)'></td>";
                                 }
-                                echo "</td>";
-
-                                // แสดงปุ่มยืนยันและยกเลิกเมื่อสถานะคือ 'Payment Received'
                                 if ($row['order_status'] == 'Payment Received') {
-                                    echo "<td class='py-3 px-4'>";
-                                    echo "<button onclick='confirmUpdate(" . $row['order_id'] . ", \"Order Processing\")' class='px-4 py-2 bg-green-500 text-white rounded-md'>ยืนยัน</button>";
-                                    echo "<button onclick='confirmUpdate(" . $row['order_id'] . ", \"Cancelled\")' class='px-4 py-2 bg-red-500 text-white rounded-md ml-2'>ยกเลิก</button>";
-                                    echo "</td>";
+                                    echo "<td class='p-2'><button onclick='confirmUpdate(" . $row['order_id'] . ", \"Order Processing\")' class='px-2 py-1 bg-green-500 text-white rounded'>ยืนยัน</button>";
+                                    echo "<button onclick='confirmUpdate(" . $row['order_id'] . ", \"Cancelled\")' class='px-2 py-1 bg-red-500 text-white rounded ml-1'>ยกเลิก</button></td>";
                                 }
                                 echo "</tr>";
                             }
-
                         } else {
-                            echo "<tr><td colspan='5' class='py-3 px-4 text-center text-gray-500'>ไม่มีคำสั่งซื้อที่ค้นหา</td></tr>";
+                            echo "<tr><td colspan='5' class='p-3 text-center text-gray-500'>ไม่มีคำสั่งซื้อ</td></tr>";
                         }
                         ?>
                     </tbody>
                 </table>
             </div>
 
+            <!-- Modal -->
             <div id="fullScreenModal"
-                class="hidden fixed top-0 left-0 w-full h-full bg-black bg-opacity-75 flex items-center justify-center z-50">
-                <span class="absolute top-4 right-6 text-white text-3xl cursor-pointer"
+                class="hidden fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center">
+                <span class="absolute top-2 right-4 text-2xl text-white cursor-pointer"
                     onclick="closeFullScreenModal()">&times;</span>
-                <img id="modalImage" class="max-w-full max-h-full rounded-lg" alt="Full Screen Slip">
+                <img id="modalImage" class="max-w-full max-h-full rounded">
             </div>
-
         </div>
+
     </div>
     <script>
         function showFullScreenModal(src) {

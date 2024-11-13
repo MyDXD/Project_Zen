@@ -21,16 +21,51 @@
         <div
             class="mx-auto bg-gray-100 rounded-lg shadow-md mt-2 max-w-2xl px-4 py-16 sm:px-6 sm:py-16 lg:max-w-7xl lg:px-8">
             <h2 class="text-2xl font-bold tracking-tight text-center text-gray-900">สินค้าทั้งหมด</h2>
-            <form action="" method="POST" class="flex items-center w-full max-w-md mx-auto p-4">
+            <form action="" method="POST" class="flex items-center w-full max-w-md mx-auto p-4 space-x-2">
                 <input type="text" name="search" placeholder="ค้นหาสินค้า"
-                    class="border border-gray-300 p-2 rounded-l-lg w-full">
-                <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded-r-lg">ค้นหา</button>
+                    class="border border-gray-300 p-2 rounded-lg w-full">
+
+                <!-- เพิ่มส่วนการเลือกประเภทสินค้า -->
+                <select name="product_type" class="border border-gray-300 p-2 rounded-lg">
+                    <option value="">ทุกประเภท</option>
+
+                    <?php
+                    // ดึงข้อมูลประเภทสินค้าแบบไม่ซ้ำจากฐานข้อมูล
+                    $type_query = "SELECT DISTINCT product_type FROM products WHERE product_type IS NOT NULL";
+                    $type_result = $conn->query($type_query);
+
+                    if ($type_result->num_rows > 0) {
+                        // แสดงประเภทสินค้าใน <option>
+                        while ($type_row = $type_result->fetch_assoc()) {
+                            $type = htmlspecialchars($type_row['product_type']);
+                            echo "<option value=\"$type\">$type</option>";
+                        }
+                    }
+                    ?>
+                </select>
+
+                <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded-lg">ค้นหา</button>
             </form>
+
             <div class="mt-6 grid grid-cols-2 gap-x-4 gap-y-10 sm:grid-cols-3 md:grid-cols-4 lg:gap-x-8">
                 <?php
-                // แสดงรายการสินค้า
+                // รับค่าการค้นหาและประเภทสินค้า
                 $search = isset($_POST['search']) ? $_POST['search'] : '';
-                $sql = $search ? "SELECT * FROM products WHERE product_name LIKE '%$search%'" : "SELECT * FROM products";
+                $product_type = isset($_POST['product_type']) ? $_POST['product_type'] : '';
+
+                // สร้างคำสั่ง SQL ที่สามารถกรองตามชื่อสินค้าและประเภทสินค้าได้
+                $sql = "SELECT * FROM products WHERE 1=1";
+
+                // เพิ่มเงื่อนไขการค้นหาชื่อสินค้า หากมีการกรอกคำค้นหา
+                if ($search) {
+                    $sql .= " AND product_name LIKE '%$search%'";
+                }
+
+                // เพิ่มเงื่อนไขการกรองประเภทสินค้า หากมีการเลือกประเภท
+                if ($product_type) {
+                    $sql .= " AND product_type = '$product_type'";
+                }
+
                 $result = $conn->query($sql);
 
                 if ($result->num_rows > 0) {
