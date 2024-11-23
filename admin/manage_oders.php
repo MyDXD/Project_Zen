@@ -218,6 +218,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }).then((result) => {
                 if (result.isConfirmed) {
                     updateOrderStatus(orderId, newStatus);
+                    alert("สถานะได้ถูกอัปเดตเป็น " + newStatus);
+                    location.reload(); // รีเฟรชหน้าหลังการอัปเดต 
                 }
             });
         }

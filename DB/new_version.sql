@@ -31,7 +31,7 @@ CREATE TABLE IF NOT EXISTS `cart` (
   KEY `product_id` (`product_id`),
   CONSTRAINT `cart_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `userdata` (`user_id`),
   CONSTRAINT `cart_ibfk_2` FOREIGN KEY (`product_id`) REFERENCES `products` (`product_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=138 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=165 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Dumping data for table sanahstore.cart: ~0 rows (approximately)
 
@@ -51,7 +51,7 @@ CREATE TABLE IF NOT EXISTS `orders` (
   PRIMARY KEY (`order_id`),
   KEY `user_id` (`user_id`),
   CONSTRAINT `orders_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `userdata` (`user_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=148 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=176 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Dumping data for table sanahstore.orders: ~0 rows (approximately)
 
@@ -81,39 +81,40 @@ CREATE TABLE IF NOT EXISTS `products` (
   `product_img` longtext NOT NULL,
   `stock` int(11) NOT NULL,
   PRIMARY KEY (`product_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=35 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=38 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Dumping data for table sanahstore.products: ~8 rows (approximately)
+-- Dumping data for table sanahstore.products: ~9 rows (approximately)
 REPLACE INTO `products` (`product_id`, `product_name`, `product_price`, `product_type`, `product_detail`, `product_img`, `stock`) VALUES
-	(19, 'Leather Long Wallet', '75.00', 'ตากแห้ง', 'Hand-stitched wallet made from premium leather.', 'product_pic/ทาโร่.jpg', 52),
-	(20, 'Classic White T-Shirt', '20.00', 'อบกรอบ', 'A classic white t-shirt made from 100% cotton.', 'product_pic/น้ำเก.jpg', 35),
-	(21, 'Running Shoes', '120.00', 'ตากแห้ง', 'Lightweight running shoes with breathable fabric.', 'product_pic/6706c03899af9Screenshot 2024-04-22 173346.png', 47),
-	(22, 'กาแฟดำ', '150.00', 'ชา/กาแฟ', 'แดกเยอะก็จะนอนไม่หลับ', 'product_pic/6706c158edb70228b0d0eddf640c2ab83aad6b14887d3.jpg', 58),
+	(19, 'Leather Long Wallet', '75.00', 'ตากแห้ง', 'Hand-stitched wallet made from premium leather.', 'product_pic/ทาโร่.jpg', 51),
+	(20, 'Classic White T-Shirt', '20.00', 'อบกรอบ', 'A classic white t-shirt made from 100% cotton.', 'product_pic/น้ำเก.jpg', 31),
+	(21, 'Running Shoes', '120.00', 'ตากแห้ง', 'Lightweight running shoes with breathable fabric.', 'product_pic/6706c03899af9Screenshot 2024-04-22 173346.png', 29),
+	(22, 'กาแฟดำ', '150.00', 'ชา/กาแฟ', 'แดกเยอะก็จะนอนไม่หลับ', 'product_pic/6706c158edb70228b0d0eddf640c2ab83aad6b14887d3.jpg', 51),
 	(30, 'ขนม', '200', 'ตากแห้ง', 'อร่อย', 'product_pic/6706bb3428de6Screenshot 2024-04-22 173346.png', 99),
-	(31, 'ขนมจีบ', '40', 'ขนมนำเข้า', 'บูดแล้ว', 'product_pic/6706caaf3c7305c98ab2aba064e70b8d2f2504f4c5a19.jpg', 99),
+	(31, 'ขนมจีบ', '40', 'ขนมนำเข้า', 'บูดแล้ว', 'product_pic/6706caaf3c7305c98ab2aba064e70b8d2f2504f4c5a19.jpg', 98),
 	(33, 'test ครับน้อง', '500', 'อบกรอบ', 'test ครับน้องtest ครับน้องtest ครับน้อง', 'product_pic/670e7d4a6e1741.jpg', 6),
-	(34, 'ซิกเนเจอร์ เฮอร์บัล รีเฟรช', '80', 'ชา/กาแฟ', 'กาแฟสเปเชียลตี้ที่ให้ความ เปรี้ยว ซ่า สดชื่น สไตล์ไทย ด้วยความหอมจากของกลิ่นสมุนไพรและเปปเปอร์มิ้นต์', 'product_pic/6718f1b1ef63229a70607ae2e4679845754b7e2133c06.jpg', 50);
+	(34, 'ซิกเนเจอร์ เฮอร์บัล รีเฟรช', '80', 'ชา/กาแฟ', 'กาแฟสเปเชียลตี้ที่ให้ความ เปรี้ยว ซ่า สดชื่น สไตล์ไทย ด้วยความหอมจากของกลิ่นสมุนไพรและเปปเปอร์มิ้นต์', 'product_pic/6718f1b1ef63229a70607ae2e4679845754b7e2133c06.jpg', 50),
+	(37, 'test', '300', 'ของกินเล่น', 'testdeteail', 'product_pic/674227533d359chipichapa.jpg', 30);
 
 -- Dumping structure for table sanahstore.userdata
 CREATE TABLE IF NOT EXISTS `userdata` (
   `user_id` int(11) NOT NULL AUTO_INCREMENT,
-  `email` varchar(255) NOT NULL,
-  `password` varchar(255) NOT NULL,
-  `first_name` varchar(255) NOT NULL,
-  `last_name` varchar(255) NOT NULL,
-  `title_name` varchar(255) NOT NULL,
-  `address` text NOT NULL,
+  `email` varchar(255) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci NOT NULL,
+  `password` varchar(255) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci NOT NULL,
+  `first_name` varchar(255) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci NOT NULL,
+  `last_name` varchar(255) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci NOT NULL,
+  `title_name` varchar(255) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci NOT NULL,
+  `address` text CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci NOT NULL,
   `phone_number` varchar(10) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci NOT NULL,
   `role` enum('user','admin') CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci NOT NULL,
   PRIMARY KEY (`user_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=33 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_uca1400_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=33 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Dumping data for table sanahstore.userdata: ~4 rows (approximately)
 REPLACE INTO `userdata` (`user_id`, `email`, `password`, `first_name`, `last_name`, `title_name`, `address`, `phone_number`, `role`) VALUES
-	(27, 'niraname@gmail.com', '123', 'นิรนาม', 'ไม่ทราบชื่อ', '', '', '', 'user'),
-	(28, 'user@user.com', '123456', 'userFirst', 'userLastname', 'tseestes', '284 O\'Reilly Fords, Port Marcellfurt, ND 20587', '0946645521', 'user'),
-	(29, 'admin@admin.com', '1234', 'admin', 'admin', 'asdsadsa', 'Suite 549 61706 Wolff Pass, Laruechester, AL 18413-1354', '0974412234', 'admin'),
-	(32, 'dxd@dxd.com', '1234', 'D', 'XD', 'title_name', 'ไม่บอกเขิน', '0984445512', 'user');
+	(27, 'niraname@gmail.com', '$2y$10$d2QwhLpFMMFRif4uFDLzeemM5laBwDc9fh6ET37uaDSm4JrZ8fJkO', 'นิรนาม', 'ไม่ทราบชื่อ', '', '', '', 'user'),
+	(28, 'user@user.com', '$2y$10$d2QwhLpFMMFRif4uFDLzeemM5laBwDc9fh6ET37uaDSm4JrZ8fJkO', 'userFirst', 'userLastname', 'tseestes', '284 O\'Reilly Fords, Port Marcellfurt, ND 20587', '0946645521', 'user'),
+	(29, 'admin@admin.com', '$2y$10$d2QwhLpFMMFRif4uFDLzeemM5laBwDc9fh6ET37uaDSm4JrZ8fJkO', 'admin', 'admin', 'asdsadsa', 'Suite 549 61706 Wolff Pass, Laruechester, AL 18413-1354', '0974412234', 'admin'),
+	(32, 'dxd@dxd.com', '$2y$10$d2QwhLpFMMFRif4uFDLzeemM5laBwDc9fh6ET37uaDSm4JrZ8fJkO', 'D', 'XD', 'title_name', 'ไม่บอกเขิน', '0984445512', 'user');
 
 /*!40103 SET TIME_ZONE=IFNULL(@OLD_TIME_ZONE, 'system') */;
 /*!40101 SET SQL_MODE=IFNULL(@OLD_SQL_MODE, '') */;
