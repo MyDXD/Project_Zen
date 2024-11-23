@@ -176,10 +176,9 @@ include "nav_bar.php"; // เรียกไฟล์ nav_bar.php
 
 <div class="bg-white">
     <div class="mx-auto max-w-2xl px-4 pb-24 pt-16 sm:px-6 lg:max-w-7xl lg:px-8">
-        <h1 class="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">Shopping Cart</h1>
+        <h1 class="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">สินค้าในตระกร้า</h1>
         <form method="POST" class="mt-12 lg:grid lg:grid-cols-12 lg:items-start lg:gap-x-12 xl:gap-x-16">
             <section aria-labelledby="cart-heading" class="lg:col-span-7">
-                <h2 id="cart-heading" class="sr-only">Items in your shopping cart</h2>
 
                 <ul role="list" class="divide-y divide-gray-200 border-b border-t border-gray-200">
                     <?php foreach ($cart_items as $item): ?>
@@ -240,13 +239,13 @@ include "nav_bar.php"; // เรียกไฟล์ nav_bar.php
             </section>
             <section aria-labelledby="summary-heading"
                 class="mt-16 rounded-lg bg-gray-50 px-4 py-6 sm:p-6 lg:col-span-5 lg:mt-0 lg:p-8">
-                <h2 id="summary-heading" class="text-lg font-medium text-gray-900">Order summary</h2>
+                <h2 id="summary-heading" class="text-lg font-medium text-gray-900">สรุปรายการสั่งซื้อ</h2>
 
                 <div class="mt-6 space-y-4">
                     <!-- แสดงผลรวมของการสั่งซื้อ -->
                     <div class="mt-6 space-y-4">
                         <div class="flex items-center justify-between border-t border-gray-200 pt-4">
-                            <div class="text-base font-medium text-gray-900">Order total</div>
+                            <div class="text-base font-medium text-gray-900">ราคารวม</div>
                             <div id="order-total" class="text-base font-medium text-gray-900">0 บาท</div>
                         </div>
                     </div>
@@ -268,7 +267,7 @@ include "nav_bar.php"; // เรียกไฟล์ nav_bar.php
                         <form method="POST">
                             <div class="mt-6">
                                 <button type="submit"
-                                    class="w-full rounded-md border border-transparent bg-indigo-600 px-4 py-3 text-base font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-gray-50">Checkout</button>
+                                    class="w-full rounded-md border border-transparent bg-indigo-600 px-4 py-3 text-base font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-gray-50">ยืนยันคำสั่งซื้อ</button>
                             </div>
                         </form>
                         ';
@@ -276,7 +275,7 @@ include "nav_bar.php"; // เรียกไฟล์ nav_bar.php
                     echo '
                         <div class="mt-6">
                             <button type="button" disabled
-                                class="w-full rounded-md border border-transparent bg-gray-400 px-4 py-3 text-base font-medium text-white shadow-sm cursor-not-allowed">Checkout</button>
+                                class="w-full rounded-md border border-transparent bg-gray-400 px-4 py-3 text-base font-medium text-white shadow-sm cursor-not-allowed">ยืนยันคำสั่งซื้อ</button>
                             <p class="text-red-500 text-sm mt-2">ไม่มีสินค้าในตะกร้า</p>
                         </div>
                         ';

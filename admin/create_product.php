@@ -82,7 +82,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             <div class="mb-4">
                 <label for="image" class="block text-gray-700">รูปภาพ</label>
                 <input type="file" id="product_img" name="product_img"
-                    class="w-full px-3 py-2 border border-gray-300 rounded-lg">
+                    class="w-full px-3 py-2 border border-gray-300 rounded-lg" required>
             </div>
             <?php
             // ดึงประเภทสินค้าทั้งหมดจากตาราง products โดยไม่เอาค่าซ้ำ
