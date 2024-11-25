@@ -41,7 +41,8 @@ $recent_orders_result = mysqli_query($conn, $recent_orders_query);
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>E-commerce Admin Dashboard</title>
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+
 </head>
 
 <body class="bg-gray-100">
@@ -87,16 +88,47 @@ $recent_orders_result = mysqli_query($conn, $recent_orders_query);
                         </tr>
                     </thead>
                     <tbody>
-                        <?php while ($order = mysqli_fetch_assoc($recent_orders_result)): ?>
+                        <?php while ($order = mysqli_fetch_assoc($recent_orders_result)):
+                            $statusText = '';
+                            $statusColor = '';
+
+                            // กำหนดข้อความและสีตามสถานะ
+                            switch ($order['order_status']) {
+                                case 'Order Placed':
+                                    $statusText = 'รอชำระเงิน';
+                                    break;
+                                case 'Payment Received':
+                                    $statusText = 'ชำระเงินแล้ว รอตรวจสอบ';
+                                    break;
+                                case 'Order Processing':
+                                    $statusText = 'กำลังจัดส่ง';
+                                    break;
+                                case 'Completed':
+                                    $statusText = 'จัดส่งสำเร็จ';
+                                    break;
+                                case 'Cancelled':
+                                    $statusText = 'ยกเลิก';
+                                    break;
+                                default:
+                                    $statusText = 'ไม่ทราบสถานะ';
+                                    break;
+                            }
+                            ?>
                             <tr>
                                 <td class="px-4 py-2"><?= htmlspecialchars($order['order_code']) ?></td>
-                                <td class="px-4 py-2"><?= htmlspecialchars($order['first_name'] . ' ' . $order['last_name']) ?></td>
+                                <td class="px-4 py-2">
+                                    <?= htmlspecialchars($order['first_name'] . ' ' . $order['last_name']) ?></td>
                                 <td class="px-4 py-2"><?= number_format($order['total_price'], 2) ?> บาท</td>
-                                <td class="px-4 py-2"><?= htmlspecialchars($order['order_status']) ?></td>
+                                <td class="px-4 py-2">
+                                    <span class="px-2 py-1 rounded <?= $statusColor ?>">
+                                        <?= htmlspecialchars($statusText) ?>
+                                    </span>
+                                </td>
                                 <td class="px-4 py-2"><?= htmlspecialchars($order['order_date']) ?></td>
                             </tr>
                         <?php endwhile; ?>
                     </tbody>
+
                 </table>
             </div>
         </div>
