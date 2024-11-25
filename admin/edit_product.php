@@ -111,7 +111,7 @@ if (!$row) {
                         class="w-72 h-72 object-cover">
                 <?php endif; ?>
             </div>
-            <div class="mb-4">
+            <!-- <div class="mb-4">
                 <label for="cars" style=" border-style: solid 2px;">ประเภทสินค้า</label>
                 <select name="product_type">
                     <option value="ตากแห้ง" <?php if ($row['product_type'] == 'ตากแห้ง')
@@ -131,7 +131,28 @@ if (!$row) {
                     <option value="อื่นๆ" <?php if ($row['product_type'] == 'อื่นๆ')
                         echo 'selected'; ?>>อื่นๆ</option>
                 </select>
+            </div> -->
+
+            <?php
+            // ดึงประเภทสินค้าทั้งหมดจากตาราง products โดยไม่เอาค่าซ้ำ
+            $product_types_query = "SELECT DISTINCT product_type FROM products";
+            $product_types_result = mysqli_query($conn, $product_types_query);
+            ?>
+            <div class="mb-4">
+                <label for="product_type" style="border-style: solid 2px;">ประเภทสินค้า</label>
+                <input list="product_types_list" value="<?php echo htmlspecialchars($row['product_type']); ?>" name="product_type" id="product_type" class="border p-2 w-full" required>
+                <datalist id="product_types_list">
+                    <?php
+                    // วนลูปแสดงผลประเภทสินค้าจากฐานข้อมูล
+                    while ($row = mysqli_fetch_assoc($product_types_result)) {
+                        $type = $row['product_type'];
+                        echo "<option value='$type'>$type</option>";
+                    }
+                    ?>
+                </datalist>
             </div>
+
+            
 
 
             <button type="submit"
@@ -139,5 +160,20 @@ if (!$row) {
         </form>
     </div>
 </body>
+
+<script>
+    // ฟังก์ชั่นเพื่อแสดง/ซ่อนช่องพิมพ์ประเภทสินค้าใหม่
+    function toggleOtherInput() {
+        var selectBox = document.getElementById("product_type");
+        var otherInputDiv = document.getElementById("other_product_type");
+
+        // ถ้าผู้ใช้เลือก "อื่นๆ" แสดงช่องพิมพ์
+        if (selectBox.value == "อื่นๆ") {
+            otherInputDiv.style.display = "block";
+        } else {
+            otherInputDiv.style.display = "none";
+        }
+    }
+</script>
 
 </html>
